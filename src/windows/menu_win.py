@@ -1,4 +1,5 @@
 from src.windows.utils import BaseWindow
+from src.utils import get_title_ascii
 
 
 class MenuWindow(BaseWindow):
@@ -18,12 +19,18 @@ class MenuWindow(BaseWindow):
 
     def draw(self):
         print(self.term.clear)
-        print(self.term.center("Main Menu\n"))
+
+        title_art = get_title_ascii()
+        for line in title_art.splitlines():
+            print(self.term.center(line))
+
+        print()
+
         for i, item in enumerate(self.items):
             if i == self.selected_index:
                 print(self.term.center(self.term.reverse(item)))
-            else:
-                print(self.term.center(item))
+                continue
+            print(self.term.center(item))
 
     def __handle_selection(self):
         selected_item = self.items[self.selected_index]

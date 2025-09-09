@@ -54,7 +54,7 @@ class GameWindow(BaseWindow):
     def __draw_hands(self):
         print(self.term.center("DEALER"))
 
-        dealer_hand = self.game.get_dealer_visible_hand()
+        dealer_hand = self.game.get_dealer_hand()
         dealer_hidden = self.game.state != GameState.GAME_OVER
         self.__draw_cards(dealer_hand, append_hidden=dealer_hidden)
         print()
@@ -94,7 +94,7 @@ class GameWindow(BaseWindow):
             return
 
         hand_info += f"Total: {hand.get_value()}"        
-        if hand.is_blackjack():
+        if hand.is_blackjack:
             hand_info += " (BLACKJACK!)"
         
         elif hand.is_bust:

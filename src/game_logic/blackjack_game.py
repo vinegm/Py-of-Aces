@@ -43,7 +43,7 @@ class BlackjackGame:
 
         self.deck = BlackjackDeck()
         self.player_hands: list[Hand] = [Hand()]
-        self.dealer_hand = Hand()
+        self.dealer_hand = Hand(hidden_card_default=True)
         self.mode: BaseGameMode | None = None
 
     def select_mode(self, selected_mode: str) -> None:
@@ -68,6 +68,7 @@ class BlackjackGame:
         """Start a new round."""
         if len(self.deck) < 15:
             self.deck.reset_deck()
+
         self.reset_game()
 
     def reset_game(self):
@@ -103,8 +104,8 @@ class BlackjackGame:
             
             self.dealer_hand.add_card(card)
 
-        is_player_blackjack = self.player_hands[0].is_blackjack()
-        is_dealer_blackjack = self.dealer_hand.is_blackjack()
+        is_player_blackjack = self.player_hands[0].is_blackjack
+        is_dealer_blackjack = self.dealer_hand.is_blackjack
 
         self.dealer_hidden_card = False
         self.state = GameState.GAME_OVER
@@ -124,7 +125,7 @@ class BlackjackGame:
 
     def hit(self) -> bool:
         """Player hits. Returns True if successful."""
-        if self.state != GameState.PLAYER_TURN:
+        if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
 
         current_hand = self.player_hands[self.current_hand_index]
@@ -137,7 +138,7 @@ class BlackjackGame:
 
     def stand(self) -> bool:
         """Player stands. Returns True if successful."""
-        if self.state != GameState.PLAYER_TURN:
+        if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
 
         self.__finish_current_hand()
@@ -145,7 +146,7 @@ class BlackjackGame:
 
     def double_down(self) -> bool:
         """Player doubles down. Returns True if successful."""
-        if self.state != GameState.PLAYER_TURN:
+        if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
         
         if not self.can_double_down():
@@ -170,7 +171,7 @@ class BlackjackGame:
 
     def split(self) -> bool:
         """Player splits their hand. Returns True if successful."""
-        if self.state != GameState.PLAYER_TURN:
+        if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
 
         if not self.can_split():
@@ -283,36 +284,23 @@ class BlackjackGame:
         """Get total current bet across all hands."""
         return sum(self.bets)
 
-    def get_dealer_visible_hand(self) -> Hand:
+    def get_dealer_hand(self) -> Hand:
         """Get dealer hand, shows only cards that should be visible to player."""
-        if self.dealer_hidden_card:
-            return Hand([self.dealer_hand.cards[0]])
-        
-        return self.dealer_hand
-
-    def get_dealer_visible_value(self) -> int:
-        """Get dealer value that should be visible to player."""
-        if self.dealer_hidden_card:
-            if isinstance(self.dealer_hand.cards[0].value(), list):
-                return "11/1"
-            
-            return self.dealer_hand.cards[0].value()
-        
-        return self.dealer_hand.get_value()
+        return self.dealer_hand.get_showing_cards()
 
     def get_current_hand(self) -> Hand:
         """Get the currently active hand."""
         if self.current_hand_index < len(self.player_hands):
             return self.player_hands[self.current_hand_index]
         
-        return self.player_hands[0]  # Fallback
+        return self.player_hands[0]
 
     def can_double_down(self) -> bool:
         """Check if current hand can double down."""
-        if self.state != GameState.PLAYER_TURN:
+        if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
 
-        if not self.player_hands[self.current_hand_index].can_double_down():
+        if not self.player_hands[self.current_hand_index].can_double_down:
             return False
 
         bet_amount = self.bets[self.current_hand_index]
@@ -320,10 +308,10 @@ class BlackjackGame:
 
     def can_split(self) -> bool:
         """Check if current hand can be split."""
-        if self.state != GameState.PLAYER_TURN:
+        if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
 
-        if not self.player_hands[0].can_split():
+        if not self.player_hands[0].can_split:
             return False
 
         bet_amount = self.bets[0]
@@ -337,3 +325,6 @@ class BlackjackGame:
 
     def is_broke(self) -> bool:
         return self.mode.is_game_over()
+
+    def __validate_game_state(self, required_state: GameState) -> bool:
+        return self.state == required_state

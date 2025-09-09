@@ -1,7 +1,7 @@
 from src.windows.utils import BaseWindow
 from src.utils import get_title_ascii
 from src.game_logic import BlackjackGame
-from src.config import *
+from src.config import enter_keys, up_keys, down_keys, quit_keys
 
 
 class MenuWindow(BaseWindow):
@@ -12,6 +12,7 @@ class MenuWindow(BaseWindow):
         game: The BlackjackGame instance to manage game state.
         betting_window: The name of the betting window to switch to.
     """
+
     items = ["Play", "Practice", "Quit"]
     item_count = len(items)
     selected_index = 0
@@ -40,13 +41,13 @@ class MenuWindow(BaseWindow):
 
         if key in up_keys:
             self.selected_index = (self.selected_index - 1) % self.item_count
-        
+
         elif key in down_keys:
             self.selected_index = (self.selected_index + 1) % self.item_count
-        
+
         elif key in enter_keys:
             self.__handle_selection()
-        
+
         elif key in quit_keys:
             self.stop_process()
 

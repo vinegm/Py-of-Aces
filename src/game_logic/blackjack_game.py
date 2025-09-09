@@ -1,5 +1,5 @@
 from enum import Enum
-from src.game_logic.deck import BlackjackDeck, Card
+from src.game_logic.deck import BlackjackDeck
 from src.game_logic.hand import Hand
 from src.game_logic.game_modes import BaseGameMode, NormalMode, PracticeMode
 from src.config import default_starting_money
@@ -22,6 +22,7 @@ class GameResult(Enum):
     PLAYER_BUST = 5
     DEALER_BUST = 6
 
+
 winnings_mult_map = {
     GameResult.PLAYER_WIN: 2,
     GameResult.DEALER_BUST: 2,
@@ -31,38 +32,43 @@ winnings_mult_map = {
 
 
 class BlackjackGame:
-    bets: list[int] = [0]
-    state = GameState.BETTING
-    result: list[GameResult] | None = None
-    dealer_hidden_card = True
-    current_hand_index = 0
-    hands_finished = 0
-
     def __init__(self, starting_money: int = default_starting_money):
         self.starting_money = starting_money
 
         self.deck = BlackjackDeck()
-        self.player_hands: list[Hand] = [Hand()]
         self.dealer_hand = Hand(hidden_card_default=True)
+        self.player_hands: list[Hand] = [Hand()]
+        self.current_hand_index: int = 0
+
+        self.bets: list[int] = [0]
+        self.state: GameState = GameState.BETTING
+        self.result: list[GameResult] | None = None
+        self.hands_finished: int = 0
+
         self.mode: BaseGameMode | None = None
 
     def select_mode(self, selected_mode: str) -> None:
         """Select the game mode."""
+        if selected_mode == self.current_mode_name():
+            return
+
         match selected_mode:
             case "normal":
                 self.mode = NormalMode(self.starting_money)
+                self.reset_game()
             case "practice":
                 self.mode = PracticeMode()
+                self.reset_game()
 
     def current_mode_name(self) -> str:
         """Get the name of the current game mode."""
         if isinstance(self.mode, NormalMode):
-            return "Normal"
-        
-        if isinstance(self.mode, PracticeMode):
-            return "Practice"
+            return "normal"
 
-        return "Unknown"
+        if isinstance(self.mode, PracticeMode):
+            return "practice"
+
+        return "unknown"
 
     def start_new_round(self):
         """Start a new round."""
@@ -78,7 +84,6 @@ class BlackjackGame:
         self.state = GameState.BETTING
         self.result = None
         self.dealer_hand.reset()
-        self.dealer_hidden_card = True
         self.current_hand_index = 0
         self.hands_finished = 0
 
@@ -101,13 +106,12 @@ class BlackjackGame:
             if i % 2 == 0:
                 self.player_hands[0].add_card(card)
                 continue
-            
+
             self.dealer_hand.add_card(card)
 
         is_player_blackjack = self.player_hands[0].is_blackjack
         is_dealer_blackjack = self.dealer_hand.is_blackjack
 
-        self.dealer_hidden_card = False
         self.state = GameState.GAME_OVER
         match (is_player_blackjack, is_dealer_blackjack):
             case (True, True):
@@ -120,7 +124,6 @@ class BlackjackGame:
                 self.result = [GameResult.DEALER_BLACKJACK]
 
             case (False, False):
-                self.dealer_hidden_card = True
                 self.state = GameState.PLAYER_TURN
 
     def hit(self) -> bool:
@@ -148,15 +151,15 @@ class BlackjackGame:
         """Player doubles down. Returns True if successful."""
         if not self.__validate_game_state(GameState.PLAYER_TURN):
             return False
-        
+
         if not self.can_double_down():
             return False
 
         bet_amount = self.bets[self.current_hand_index]
-        
+
         if not self.mode.double_down_bet(bet_amount):
             return False
-            
+
         self.bets[self.current_hand_index] *= 2
 
         current_hand = self.player_hands[self.current_hand_index]
@@ -178,13 +181,13 @@ class BlackjackGame:
             return False
 
         bet_amount = self.bets[0]
-        
+
         if not self.mode.split_bet(bet_amount):
             return False
 
         original_hand = self.player_hands[0]
         new_hand = Hand()
-        
+
         second_card = original_hand.cards.pop()
         new_hand.add_card(second_card)
 
@@ -208,7 +211,6 @@ class BlackjackGame:
 
         if self.current_hand_index >= len(self.player_hands):
             self.state = GameState.DEALER_TURN
-            self.dealer_hidden_card = False
             self.__dealer_play()
 
     def __dealer_play(self):
@@ -226,6 +228,7 @@ class BlackjackGame:
                 self.dealer_hand.add_card(self.deck.deal(1)[0])
 
         self.__determine_all_winners()
+        self.dealer_hand.has_hidden_card = False
         self.state = GameState.GAME_OVER
 
     def __determine_all_winners(self):
@@ -238,7 +241,7 @@ class BlackjackGame:
 
         for i, hand in enumerate(self.player_hands):
             if self.result[i] is not None:
-                continue  
+                continue
 
             player_value = hand.get_value()
 
@@ -275,7 +278,7 @@ class BlackjackGame:
 
             bet = self.bets[i]
             mult = winnings_mult_map.get(result, 0)
-            
+
             total_winnings += int(bet * mult)
 
         return total_winnings
@@ -284,15 +287,11 @@ class BlackjackGame:
         """Get total current bet across all hands."""
         return sum(self.bets)
 
-    def get_dealer_hand(self) -> Hand:
-        """Get dealer hand, shows only cards that should be visible to player."""
-        return self.dealer_hand.get_showing_cards()
-
     def get_current_hand(self) -> Hand:
         """Get the currently active hand."""
         if self.current_hand_index < len(self.player_hands):
             return self.player_hands[self.current_hand_index]
-        
+
         return self.player_hands[0]
 
     def can_double_down(self) -> bool:
@@ -316,15 +315,16 @@ class BlackjackGame:
 
         bet_amount = self.bets[0]
         return self.mode.can_afford_bet(bet_amount)
-    
+
     def get_money_display(self) -> str:
         return self.mode.get_money_display()
 
     def get_available_money(self) -> int:
         return self.mode.get_available_money()
 
-    def is_broke(self) -> bool:
-        return self.mode.is_game_over()
+    @property
+    def is_game_over(self) -> bool:
+        return self.mode.is_game_over
 
     def __validate_game_state(self, required_state: GameState) -> bool:
         return self.state == required_state

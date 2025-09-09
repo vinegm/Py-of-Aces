@@ -1,7 +1,7 @@
 from src.windows.utils import BaseWindow
 from src.utils import get_card_ascii, join_cards
 from src.game_logic import BlackjackGame, GameState, GameResult, Hand
-from src.config import *
+from src.config import enter_keys, quit_keys
 
 result_text_mapping = {
     GameResult.PLAYER_WIN: "YOU WIN",
@@ -10,15 +10,17 @@ result_text_mapping = {
     GameResult.DEALER_WIN: "Dealer wins. You lose",
     GameResult.DEALER_BLACKJACK: "Dealer blackjack. You lose",
     GameResult.PLAYER_BUST: "BUST! You lose",
-    GameResult.PUSH: "PUSH! Bet returned"
+    GameResult.PUSH: "PUSH! Bet returned",
 }
 
 
 class GameWindow(BaseWindow):
-    message = ""
-    def __init__(self, game: BlackjackGame, menu_window: str, betting_window: str, **kwargs):
+    def __init__(
+        self, game: BlackjackGame, menu_window: str, betting_window: str, **kwargs
+    ):
         super().__init__(**kwargs)
         self.game = game
+        self.message = ""
         self.menu_window = menu_window
         self.betting_window = betting_window
 
@@ -26,9 +28,9 @@ class GameWindow(BaseWindow):
         print(self.term.clear)
 
         mode_text = ""
-        if self.game.current_mode_name() == "Practice":
+        if self.game.current_mode_name() == "practice":
             mode_text = " (PRACTICE)"
-        
+
         title = self.term.bold("PY OF ACES - BLACKJACK" + mode_text)
         print(self.term.center(title))
         print()
@@ -54,9 +56,8 @@ class GameWindow(BaseWindow):
     def __draw_hands(self):
         print(self.term.center("DEALER"))
 
-        dealer_hand = self.game.get_dealer_hand()
-        dealer_hidden = self.game.state != GameState.GAME_OVER
-        self.__draw_cards(dealer_hand, append_hidden=dealer_hidden)
+        dealer_hand = self.game.dealer_hand
+        self.__draw_cards(dealer_hand)
         print()
 
         print(self.term.center("PLAYER"))
@@ -72,14 +73,15 @@ class GameWindow(BaseWindow):
 
             self.__draw_cards(hand)
 
-    def __draw_cards(self, hand: Hand, append_hidden: bool = False) -> None:
+    def __draw_cards(self, hand: Hand) -> None:
         card_arts = []
+        has_hidden = hand.has_hidden_card
 
-        for card in hand.cards:
+        for card in hand.get_showing_cards():
             card_art = get_card_ascii(card.rank, card.suit)
             card_arts.append(card_art)
 
-        if append_hidden:
+        if has_hidden:
             hidden_art = get_card_ascii("?", "?", face_down_text="HIDDEN")
             card_arts.append(hidden_art)
 
@@ -88,15 +90,15 @@ class GameWindow(BaseWindow):
             print(self.term.center(line))
 
         hand_info = ""
-        if append_hidden:
+        if has_hidden:
             hand_info += f"Showing: {hand.get_value()}"
             print(self.term.center(hand_info))
             return
 
-        hand_info += f"Total: {hand.get_value()}"        
+        hand_info += f"Total: {hand.get_value()}"
         if hand.is_blackjack:
             hand_info += " (BLACKJACK!)"
-        
+
         elif hand.is_bust:
             hand_info += " (BUST!)"
 
@@ -111,7 +113,7 @@ class GameWindow(BaseWindow):
         else:
             total_bet = self.game.get_total_bet()
             summary_text += f"Result: -{total_bet}$"
-        
+
         styled_result = self.term.bold_green(summary_text)
         print(self.term.center(styled_result))
 
@@ -146,7 +148,7 @@ class GameWindow(BaseWindow):
         match self.game.state:
             case GameState.PLAYER_TURN:
                 self.__handle_player_turn_input(key)
-            
+
             case GameState.GAME_OVER:
                 self.__handle_game_over_input(key)
 
@@ -173,9 +175,9 @@ class GameWindow(BaseWindow):
         """Handle input when the game is over."""
         if key in enter_keys:
             self.game.finish_round()
-            if self.game.is_broke():
+            if self.game.is_game_over:
                 self.message = "Game Over! No money left."
                 return
-            
+
             self.game.start_new_round()
             self.switch_win(self.betting_window)

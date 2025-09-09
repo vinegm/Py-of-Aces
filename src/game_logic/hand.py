@@ -1,9 +1,10 @@
 from typing import List
 from src.game_logic.deck import Card
 
+
 class Hand:
-    def __init__(self, cards: List[Card] = [], hidden_card_default: bool = False):
-        self.cards: List[Card] = cards
+    def __init__(self, hidden_card_default: bool = False):
+        self.cards: List[Card] = []
         self.has_hidden_card = hidden_card_default
         self.hidden_card_default = hidden_card_default
 
@@ -32,16 +33,16 @@ class Hand:
     def get_showing_value(self) -> int:
         if not self.has_hidden_card:
             return self.get_value()
-        
+
         return self.__count_cards(self.cards[:-1])
-    
+
     def get_cards(self) -> List[Card]:
         return self.cards
 
     def get_showing_cards(self) -> List[Card]:
         if not self.has_hidden_card:
             return self.cards
-        
+
         return self.cards[:-1]
 
     def __count_cards(self, cards) -> int:

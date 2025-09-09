@@ -1,4 +1,5 @@
 import random
+from src.config import init_num_cards_reshuffle
 
 
 class Card:
@@ -6,11 +7,11 @@ class Card:
     Represents a single playing card.
     """
 
-    def __init__(self, rank, suit):
+    def __init__(self, rank: str, suit: str):
         self.rank = rank
         self.suit = suit
 
-    def value(self):
+    def value(self) -> int | list[int]:
         """Return Blackjack value of the card."""
         if self.rank in ["J", "Q", "K"]:
             return 10
@@ -19,9 +20,6 @@ class Card:
             return [1, 11]
 
         return int(self.rank)
-
-    def __str__(self):
-        return f"{self.rank}{self.suit}"
 
 
 class BlackjackDeck:
@@ -35,19 +33,23 @@ class BlackjackDeck:
     suits = ["s", "h", "d", "c"]
     ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
-    def __init__(self, shuffle=True):
-        self._cards = []
+    def __init__(
+        self, shuffle: bool = True, num_cards_reshuffle: int = init_num_cards_reshuffle
+    ):
+        self.cards = []
+        self.num_cards_reshuffle = num_cards_reshuffle
+
         self.reset_deck(shuffle=shuffle)
 
-    def __build_deck(self):
+    def __build_deck(self) -> None:
         """Create the deck with the given number of decks."""
         for suit in self.suits:
             for rank in self.ranks:
-                self._cards.append(Card(rank, suit))
+                self.cards.append(Card(rank, suit))
 
-    def shuffle(self):
+    def shuffle(self) -> None:
         """Shuffle the deck in place."""
-        random.shuffle(self._cards)
+        random.shuffle(self.cards)
 
     def deal(self, n: int = 1) -> list[Card]:
         """
@@ -56,21 +58,22 @@ class BlackjackDeck:
         Returns:
             List of Card objects.
         """
-        if n > len(self._cards):
+        if n > len(self.cards):
             raise ValueError("Too many cards requested to deal.")
 
-        dealt, self._cards = self._cards[:n], self._cards[n:]
+        dealt, self.cards = self.cards[:n], self.cards[n:]
         return dealt
 
-    def get_all_cards(self):
-        """Return a list of all remaining cards in the deck."""
-        return self._cards[:]
-
-    def reset_deck(self, shuffle=True):
+    def reset_deck(self, shuffle: bool = True) -> None:
         """Reset to a full deck again."""
         self.__build_deck()
         if shuffle:
             self.shuffle()
 
-    def __len__(self):
-        return len(self._cards)
+    @property
+    def needs_reshuffle(self) -> bool:
+        """Check if the deck needs reshuffling."""
+        return len(self.cards) < self.num_cards_reshuffle
+
+    def __len__(self) -> int:
+        return len(self.cards)

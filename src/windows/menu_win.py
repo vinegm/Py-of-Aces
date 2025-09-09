@@ -1,5 +1,7 @@
 from src.windows.utils import BaseWindow
 from src.utils import get_title_ascii
+from src.game_logic import BlackjackGame
+from src.config import *
 
 
 class MenuWindow(BaseWindow):
@@ -7,23 +9,24 @@ class MenuWindow(BaseWindow):
     Main menu window with selectable items.
 
     args:
-        game_window: The name of the game window to switch to.
+        game: The BlackjackGame instance to manage game state.
+        betting_window: The name of the betting window to switch to.
     """
+    items = ["Play", "Practice", "Quit"]
+    item_count = len(items)
+    selected_index = 0
 
-    def __init__(self, game_window: str = None, **kwargs):
+    def __init__(self, game: BlackjackGame, betting_window: str, **kwargs):
         super().__init__(**kwargs)
-        self.game_window = game_window
-        self.items = ["Start Game", "Quit"]
-        self.item_count = len(self.items)
-        self.selected_index = 0
+        self.game = game
+        self.betting_window = betting_window
 
-    def draw(self):
+    def draw(self) -> None:
         print(self.term.clear)
 
         title_art = get_title_ascii()
         for line in title_art.splitlines():
             print(self.term.center(line))
-
         print()
 
         for i, item in enumerate(self.items):
@@ -32,24 +35,31 @@ class MenuWindow(BaseWindow):
                 continue
             print(self.term.center(item))
 
-    def __handle_selection(self):
+    def handle_input(self, key: str) -> None:
+        key = key.lower()
+
+        if key in up_keys:
+            self.selected_index = (self.selected_index - 1) % self.item_count
+        
+        elif key in down_keys:
+            self.selected_index = (self.selected_index + 1) % self.item_count
+        
+        elif key in enter_keys:
+            self.__handle_selection()
+        
+        elif key in quit_keys:
+            self.stop_process()
+
+    def __handle_selection(self) -> None:
         selected_item = self.items[self.selected_index]
         match selected_item:
-            case "Start Game":
-                self.switch_win(self.game_window)
+            case "Play":
+                self.game.select_mode("normal")
+                self.switch_win(self.betting_window)
+
+            case "Practice":
+                self.game.select_mode("practice")
+                self.switch_win(self.betting_window)
+
             case "Quit":
-                raise SystemExit
-
-    def handle_input(self, key):
-        match key:
-            case "KEY_UP" | "k":
-                self.selected_index = (self.selected_index - 1) % self.item_count
-
-            case "KEY_DOWN" | "j":
-                self.selected_index = (self.selected_index + 1) % self.item_count
-
-            case "KEY_ENTER" | " ":
-                self.__handle_selection()
-
-            case "q":
-                raise SystemExit
+                self.stop_process()

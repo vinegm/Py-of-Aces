@@ -25,6 +25,7 @@ class TuiHandler:
         self.min_width = min_width
         self.windows = windows or {}
         self.term = terminal_instance or Terminal()
+        self.running = True
 
         # Hook for easier resize
         signal.signal(signal.SIGWINCH, self.__on_resize)
@@ -36,11 +37,12 @@ class TuiHandler:
             window_class: The class of the window to add.
             *args: Positional arguments to pass to the window class.
             **kwargs: Keyword arguments to pass to the window class.
-            ps: terminal_instance and switch_win are
+            ps: terminal_instance, switch_win and stop_process are
             automatically passed, overwrite with caution.
         """
         kwargs.setdefault("terminal_instance", self.term)
         kwargs.setdefault("switch_win", self.switch_win)
+        kwargs.setdefault("stop_process", self.stop_process)
         self.windows[name] = window_class(*args, **kwargs)
 
     def switch_win(self, name: str):
@@ -51,6 +53,10 @@ class TuiHandler:
         self.__check_window_exists(name)
         self.active_window = self.windows[name]
         self.active_window.draw()
+
+    def stop_process(self):
+        """Stop the main execution loop."""
+        self.running = False
 
     def __check_window_exists(self, name: str):
         """
@@ -70,7 +76,7 @@ class TuiHandler:
             self.active_window.draw()
 
     def __execution_loop(self):
-        while True:
+        while self.running:
             key = self.term.inkey()
             self.active_window.handle_input(key.name or key)
             self.active_window.draw()

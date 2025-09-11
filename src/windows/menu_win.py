@@ -1,6 +1,6 @@
 from src.windows.utils import BaseWindow
 from src.utils import get_title_ascii
-from src.game_logic import BlackjackGame
+from src.game_logic import BlackjackGame, Modes
 from src.config import enter_keys, up_keys, down_keys, quit_keys
 
 
@@ -55,11 +55,11 @@ class MenuWindow(BaseWindow):
         selected_item = self.items[self.selected_index]
         match selected_item:
             case "Play":
-                self.game.select_mode("normal")
+                self.game.select_mode(Modes.NORMAL)
                 self.switch_win(self.betting_window)
 
             case "Practice":
-                self.game.select_mode("practice")
+                self.game.select_mode(Modes.PRACTICE)
                 self.switch_win(self.betting_window)
 
             case "Quit":

@@ -1,15 +1,12 @@
 from src.windows.utils import BaseWindow
 from src.utils import get_card_ascii, join_cards
-from src.game_logic import BlackjackGame, GameState, GameResult, Hand
+from src.game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
 from src.config import enter_keys, quit_keys
 
 result_text_mapping = {
-    GameResult.PLAYER_WIN: "YOU WIN",
-    GameResult.PLAYER_BLACKJACK: "BLACKJACK! You win",
-    GameResult.DEALER_BUST: "DEALER BUSTS! You win",
-    GameResult.DEALER_WIN: "Dealer wins. You lose",
-    GameResult.DEALER_BLACKJACK: "Dealer blackjack. You lose",
-    GameResult.PLAYER_BUST: "BUST! You lose",
+    GameResult.WIN: "YOU WIN",
+    GameResult.BLACKJACK: "BLACKJACK! You win",
+    GameResult.LOSE: "Dealer wins. You lose",
     GameResult.PUSH: "PUSH! Bet returned",
 }
 
@@ -28,15 +25,16 @@ class GameWindow(BaseWindow):
         print(self.term.clear)
 
         mode_text = ""
-        if self.game.current_mode_name() == "practice":
+        is_practice_mode = self.game.mode == Modes.PRACTICE
+        if is_practice_mode:
             mode_text = " (PRACTICE)"
 
         title = self.term.bold("PY OF ACES - BLACKJACK" + mode_text)
         print(self.term.center(title))
         print()
 
-        money_info = self.game.get_money_display()
-        money_info += f" | Total Bet: ${self.game.get_total_bet()}"
+        money_info = self.game.get_money_display
+        money_info += f" | Total Bet: ${self.game.total_bet}"
         print(self.term.center(money_info))
         print()
 
@@ -111,7 +109,7 @@ class GameWindow(BaseWindow):
         if total_winnings > 0:
             summary_text += f"Result: +{total_winnings}$"
         else:
-            total_bet = self.game.get_total_bet()
+            total_bet = self.game.total_bet
             summary_text += f"Result: -{total_bet}$"
 
         styled_result = self.term.bold_green(summary_text)
@@ -123,10 +121,10 @@ class GameWindow(BaseWindow):
             case GameState.PLAYER_TURN:
                 controls += "[h] Hit  [s] Stand"
 
-                if self.game.can_double_down():
+                if self.game.can_double_down:
                     controls += "  [d] Double Down"
 
-                if self.game.can_split():
+                if self.game.can_split:
                     controls += "  [p] Split"
 
                 controls += "  [q] Quit"

@@ -1,5 +1,5 @@
 from src.windows.utils import BaseWindow
-from src.game_logic import BlackjackGame, GameState
+from src.game_logic import BlackjackGame, GameState, Modes
 from src.config import (
     init_default_bet,
     init_bet_options,
@@ -31,7 +31,7 @@ class BettingWindow(BaseWindow):
         print(self.term.clear)
 
         mode_text = ""
-        is_practice_mode = self.game.current_mode_name() == "practice"
+        is_practice_mode = self.game.mode == Modes.PRACTICE
         if is_practice_mode:
             mode_text = " (PRACTICE)"
 
@@ -39,7 +39,7 @@ class BettingWindow(BaseWindow):
         print(self.term.center(title))
         print()
 
-        money_info = self.game.get_money_display()
+        money_info = self.game.get_money_display
         print(self.term.center(money_info))
         print()
 
@@ -72,7 +72,7 @@ class BettingWindow(BaseWindow):
     def handle_input(self, key: str) -> None:
         self.message = ""
         key = key.lower()
-        available_money = self.game.get_available_money()
+        available_money = self.game.available_money
 
         if key in quit_keys:
             self.switch_win(self.menu_window)

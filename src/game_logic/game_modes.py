@@ -1,4 +1,15 @@
+from enum import Enum
+
+
+class Modes(Enum):
+    BASE = 0
+    NORMAL = 1
+    PRACTICE = 2
+
+
 class BaseGameMode:
+    mode_type = Modes.BASE
+
     def place_bet(self, amount: int) -> bool:
         """Place a bet. Returns True if successful."""
         raise NotImplementedError
@@ -34,6 +45,8 @@ class BaseGameMode:
 
 
 class NormalMode(BaseGameMode):
+    mode_type = Modes.NORMAL
+
     def __init__(self, starting_money: int = 1000):
         self.player_money = starting_money
 
@@ -76,6 +89,8 @@ class NormalMode(BaseGameMode):
 
 
 class PracticeMode(BaseGameMode):
+    mode_type = Modes.PRACTICE
+
     def __init__(self):
         self.practice_pot = 0
 

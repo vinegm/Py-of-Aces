@@ -272,7 +272,7 @@ class BlackjackGame:
 
     def __has_non_busted(self) -> bool:
         for result in self.results:
-            if result is not None and result != GameResult.LOSE:
+            if result is not None or result != GameResult.LOSE:
                 return True
 
         return False

@@ -2,7 +2,7 @@ from enum import Enum
 from src.game_logic.deck import BlackjackDeck
 from src.game_logic.hand import Hand
 from src.game_logic.game_modes import Modes, BaseGameMode, NormalMode, PracticeMode
-from src.config import default_starting_money
+from src.config import init_starting_money, init_dealer_stand_value, init_max_splits
 
 
 class GameState(Enum):
@@ -29,11 +29,13 @@ winnings_mult_map = {
 
 
 class BlackjackGame:
-    def __init__(self, starting_money: int = default_starting_money):
+    def __init__(self, starting_money: int = init_starting_money, dealer_stand_value: int = init_dealer_stand_value, max_splits: int = init_max_splits):
         self.starting_money = starting_money
+        self.max_splits = max_splits
 
         self.deck = BlackjackDeck()
         self.dealer_hand = Hand(hidden_card_default=True)
+        self.dealer_stand_value = dealer_stand_value
         self.player_hands: list[Hand] = [Hand()]
         self.current_hand_index: int = 0
 
@@ -41,7 +43,7 @@ class BlackjackGame:
         self.current_mode: BaseGameMode | None = BaseGameMode
 
         self.state: GameState = GameState.BETTING
-        self.result: list[GameResult] | None = None
+        self.results: list[GameResult | None] = [None]
 
     @property
     def current_hand(self) -> Hand:
@@ -53,7 +55,7 @@ class BlackjackGame:
 
     @property
     def has_more_hands(self) -> bool:
-        """Check if there are more hands to play."""
+        """Check if there are more hands to play after the current one."""
         return self.current_hand_index < len(self.player_hands) - 1
 
     @property
@@ -82,10 +84,14 @@ class BlackjackGame:
         if self.state != GameState.PLAYER_TURN:
             return False
 
-        if not self.player_hands[0].can_split:
+        # max hands = max splits + 1 original hand
+        if len(self.player_hands) >= self.max_splits + 1:
             return False
 
-        bet_amount = self.bets[0]
+        if not self.current_hand.can_split:
+            return False
+
+        bet_amount = self.bets[self.current_hand_index]
         return self.current_mode.can_afford_bet(bet_amount)
 
     @property
@@ -140,14 +146,14 @@ class BlackjackGame:
         self.bets = [0]
 
         self.state = GameState.BETTING
-        self.result = None
+        self.results = [None]
 
     def place_bet(self, amount: int) -> bool:
         """Place a bet for the current hand. Returns True if successful."""
         if not self.current_mode.place_bet(amount):
             return False
 
-        self.bets[0] = amount
+        self.bets[self.current_hand_index] = amount
         return True
 
     def deal_initial_cards(self):
@@ -165,13 +171,13 @@ class BlackjackGame:
         self.state = GameState.GAME_OVER
         match (is_player_blackjack, is_dealer_blackjack):
             case (True, True):
-                self.result = [GameResult.PUSH]
+                self.results = [GameResult.PUSH]
 
             case (True, False):
-                self.result = [GameResult.BLACKJACK]
+                self.results = [GameResult.BLACKJACK]
 
             case (False, True):
-                self.result = [GameResult.LOSE]
+                self.results = [GameResult.LOSE]
 
             case (False, False):
                 self.state = GameState.PLAYER_TURN
@@ -198,7 +204,7 @@ class BlackjackGame:
 
     def double_down(self) -> bool:
         """Player doubles down. Returns True if successful."""
-        if self.state != GameState.PLAYER_TURN and not self.can_double_down:
+        if self.state != GameState.PLAYER_TURN or not self.can_double_down:
             return False
 
         bet_amount = self.bets[self.current_hand_index]
@@ -219,10 +225,10 @@ class BlackjackGame:
 
     def split(self) -> bool:
         """Player splits their hand. Returns True if successful."""
-        if self.state != GameState.PLAYER_TURN and not self.can_split:
+        if self.state != GameState.PLAYER_TURN or not self.can_split:
             return False
 
-        bet_amount = self.bets[0]
+        bet_amount = self.bets[self.current_hand_index]
 
         if not self.current_mode.split_bet(bet_amount):
             return False
@@ -235,6 +241,7 @@ class BlackjackGame:
 
         self.player_hands.append(new_hand)
         self.bets.append(bet_amount)
+        self.results.append(None)
 
         original_hand.add_card(self.deck.deal(1)[0])
         new_hand.add_card(self.deck.deal(1)[0])
@@ -243,71 +250,63 @@ class BlackjackGame:
 
     def __finish_current_hand(self, result: GameResult = None) -> None:
         """Finish the current hand and move to next or dealer turn."""
-        if result:
-            if self.result is None:
-                self.result = [None] * len(self.player_hands)
-            self.result[self.current_hand_index] = result
+        if result is not None:
+            self.results[self.current_hand_index] = result
 
-        self.current_hand_index += 1
-
-        if not self.has_more_hands:
-            self.state = GameState.DEALER_TURN
-            self.__dealer_play()
+        if self.has_more_hands:
+            self.current_hand_index += 1
+            return
+        
+        self.state = GameState.DEALER_TURN
+        self.__dealer_play()
 
     def __dealer_play(self) -> None:
         """Automated dealer play."""
-        has_non_busted_hands = False
-        if self.result:
-            has_non_busted_hands = any(
-                result != GameResult.LOSE for result in self.result if result
-            )
-        else:
-            has_non_busted_hands = any(not hand.is_bust for hand in self.player_hands)
-
-        if has_non_busted_hands:
-            while self.dealer_hand.get_value() < 17:
+        if self.__has_non_busted():
+            while self.dealer_hand.get_value() < self.dealer_stand_value:
                 self.dealer_hand.add_card(self.deck.deal(1)[0])
 
         self.__determine_winners()
         self.dealer_hand.has_hidden_card = False
         self.state = GameState.GAME_OVER
 
+    def __has_non_busted(self) -> bool:
+        for result in self.results:
+            if result is not None and result != GameResult.LOSE:
+                return True
+
+        return False
+
     def __determine_winners(self) -> None:
         """Determine the winner for each hand and set results."""
         dealer_value = self.dealer_hand.get_value()
         dealer_busted = self.dealer_hand.is_bust
 
-        if self.result is None:
-            self.result = [None] * len(self.player_hands)
-
         for i, hand in enumerate(self.player_hands):
-            if self.result[i] is not None:
+            if self.results[i] is not None:
                 continue
 
             player_value = hand.get_value()
 
             if dealer_busted:
-                self.result[i] = GameResult.WIN
+                self.results[i] = GameResult.WIN
                 continue
 
             if player_value == dealer_value:
-                self.result[i] = GameResult.PUSH
+                self.results[i] = GameResult.PUSH
                 continue
 
             if player_value > dealer_value:
-                self.result[i] = GameResult.WIN
+                self.results[i] = GameResult.WIN
                 continue
 
-            self.result[i] = GameResult.LOSE
+            self.results[i] = GameResult.LOSE
 
     def get_winnings(self) -> int:
         """Calculate total winnings based on all hand results."""
-        if self.result is None:
-            return 0
-
         total_winnings = 0
 
-        for i, result in enumerate(self.result):
+        for i, result in enumerate(self.results):
             if result is None:
                 continue
 

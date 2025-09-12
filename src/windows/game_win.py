@@ -89,11 +89,11 @@ class GameWindow(BaseWindow):
 
         hand_info = ""
         if has_hidden:
-            hand_info += f"Showing: {hand.get_value()}"
+            hand_info += f"Showing: {hand.get_showing_value()}"
             print(self.term.center(hand_info))
             return
 
-        hand_info += f"Total: {hand.get_value()}"
+        hand_info += f"Total: {hand.get_showing_value()}"
         if hand.is_blackjack:
             hand_info += " (BLACKJACK!)"
 

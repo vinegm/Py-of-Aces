@@ -29,7 +29,12 @@ winnings_mult_map = {
 
 
 class BlackjackGame:
-    def __init__(self, starting_money: int = init_starting_money, dealer_stand_value: int = init_dealer_stand_value, max_splits: int = init_max_splits):
+    def __init__(
+        self,
+        starting_money: int = init_starting_money,
+        dealer_stand_value: int = init_dealer_stand_value,
+        max_splits: int = init_max_splits,
+    ):
         self.starting_money = starting_money
         self.max_splits = max_splits
 
@@ -234,19 +239,25 @@ class BlackjackGame:
             return False
 
         original_hand = self.current_hand
-        new_hand = Hand()
+        new_hand = self.__create_new_hand(bet_amount)
 
         second_card = original_hand.cards.pop()
         new_hand.add_card(second_card)
-
-        self.player_hands.append(new_hand)
-        self.bets.append(bet_amount)
-        self.results.append(None)
 
         original_hand.add_card(self.deck.deal(1)[0])
         new_hand.add_card(self.deck.deal(1)[0])
 
         return True
+
+    def __create_new_hand(self, bet: int) -> Hand:
+        """Create a new hand for the player and return it."""
+        new_hand = Hand()
+
+        self.player_hands.append(new_hand)
+        self.bets.append(bet)
+        self.results.append(None)
+
+        return new_hand
 
     def __finish_current_hand(self, result: GameResult = None) -> None:
         """Finish the current hand and move to next or dealer turn."""
@@ -256,7 +267,7 @@ class BlackjackGame:
         if self.has_more_hands:
             self.current_hand_index += 1
             return
-        
+
         self.state = GameState.DEALER_TURN
         self.__dealer_play()
 
@@ -271,9 +282,9 @@ class BlackjackGame:
         self.state = GameState.GAME_OVER
 
     def __has_non_busted(self) -> bool:
-        for result in self.results:
-            if result is not None or result != GameResult.LOSE:
-                return True
+        """Check if there is at least one non-busted player hand."""
+        if None in self.results:
+            return True
 
         return False
 

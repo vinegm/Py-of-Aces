@@ -1,0 +1,18 @@
+[project]
+name = "py-of-aces"
+version = "1.0.0"
+description = "A blackjack TUI written in python"
+authors = [
+    {name = "vine",email = "117782568+vinegm@users.noreply.github.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "blessed (>=1.22.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

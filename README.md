@@ -39,26 +39,6 @@ A terminal-based Blackjack game written in Python using [blessed](https://pypi.o
 - Python 3.8+
 - Terminal with Unicode support
 
-### Setup
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/yourusername/Py-of-Aces.git
-   cd Py-of-Aces
-   ```
-
-2. **Install dependencies:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the game:**
-   ```bash
-   python py_of_aces.py
-   ```
-
 ## Game Rules
 
 ### Blackjack Basics

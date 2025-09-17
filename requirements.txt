@@ -1,2 +1,0 @@
-blessed==1.21.0
-wcwidth==0.2.13

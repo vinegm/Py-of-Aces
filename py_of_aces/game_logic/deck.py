@@ -1,5 +1,5 @@
 import random
-from src.config import init_num_cards_reshuffle
+from ..config import init_num_cards_reshuffle
 
 
 class Card:

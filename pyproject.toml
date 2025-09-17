@@ -16,3 +16,9 @@ dependencies = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+pyofaces = "py_of_aces:console_entry_point"
+pyaces = "py_of_aces:console_entry_point"
+poa = "py_of_aces:console_entry_point"
+

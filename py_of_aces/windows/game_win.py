@@ -1,7 +1,7 @@
-from src.windows.utils import BaseWindow
-from src.utils import get_card_ascii, join_cards
-from src.game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
-from src.config import enter_keys, quit_keys
+from .utils import BaseWindow
+from ..utils import get_card_ascii, join_cards
+from ..game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
+from ..config import enter_keys, quit_keys
 
 result_text_mapping = {
     GameResult.WIN: "YOU WIN",

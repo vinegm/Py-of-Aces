@@ -1,6 +1,6 @@
-from src.windows.utils import BaseWindow
-from src.game_logic import BlackjackGame, GameState, Modes
-from src.config import (
+from .utils import BaseWindow
+from ..game_logic import BlackjackGame, GameState, Modes
+from ..config import (
     init_default_bet,
     init_bet_options,
     quit_keys,

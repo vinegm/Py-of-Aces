@@ -1,7 +1,7 @@
-from src.windows.utils import BaseWindow
-from src.utils import get_title_ascii
-from src.game_logic import BlackjackGame, Modes
-from src.config import enter_keys, up_keys, down_keys, quit_keys
+from .utils import BaseWindow
+from ..utils import get_title_ascii
+from ..game_logic import BlackjackGame, Modes
+from ..config import enter_keys, up_keys, down_keys, quit_keys
 
 
 class MenuWindow(BaseWindow):

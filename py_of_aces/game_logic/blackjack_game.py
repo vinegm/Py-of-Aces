@@ -1,8 +1,8 @@
 from enum import Enum
-from src.game_logic.deck import BlackjackDeck
-from src.game_logic.hand import Hand
-from src.game_logic.game_modes import Modes, BaseGameMode, NormalMode, PracticeMode
-from src.config import init_starting_money, init_dealer_stand_value, init_max_splits
+from .deck import BlackjackDeck
+from .hand import Hand
+from .game_modes import Modes, BaseGameMode, NormalMode, PracticeMode
+from ..config import init_starting_money, init_dealer_stand_value, init_max_splits
 
 
 class GameState(Enum):

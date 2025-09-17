@@ -1,5 +1,5 @@
 from typing import List
-from src.game_logic.deck import Card
+from .deck import Card
 
 
 class Hand:

@@ -1,6 +1,6 @@
-from src.tui_handler import TuiHandler
-from src.windows import MenuWindow, GameWindow, BettingWindow
-from src.game_logic.blackjack_game import BlackjackGame
+from .tui_handler import TuiHandler
+from .windows import MenuWindow, GameWindow, BettingWindow
+from .game_logic.blackjack_game import BlackjackGame
 
 
 def run():

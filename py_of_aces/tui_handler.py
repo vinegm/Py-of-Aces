@@ -1,6 +1,6 @@
 import signal
 from blessed import Terminal
-from src.windows.utils import BaseWindow
+from .windows.utils import BaseWindow
 
 
 class TuiHandler:

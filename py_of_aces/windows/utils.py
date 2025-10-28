@@ -14,3 +14,20 @@ class BaseWindow:
 
     def handle_input(self, key: str):
         raise NotImplementedError
+
+    def render(self) -> None:
+        """Renders the lines from draw() centered vertically and horizontally."""
+        lines = self.draw() or []
+
+        if not isinstance(lines, (list, tuple)):
+            lines = [str(lines)]
+
+        height = getattr(self.term, "height", None) or 24
+        pad = max((int(height) - len(lines)) // 2, 0)
+
+        print(self.term.clear)
+        for _ in range(pad):
+            print()
+
+        for line in lines:
+            print(self.term.center(line))

@@ -43,11 +43,16 @@ class BaseGameMode:
         """Check if player can afford a specific bet amount."""
         raise NotImplementedError
 
+    def reset_money(self):
+        """Reset any round-specific data."""
+        pass
+
 
 class NormalMode(BaseGameMode):
     mode_type = Modes.NORMAL
 
     def __init__(self, starting_money: int = 1000):
+        self.starting_money = starting_money
         self.player_money = starting_money
 
     def place_bet(self, amount: int) -> bool:
@@ -87,6 +92,9 @@ class NormalMode(BaseGameMode):
     def can_afford_bet(self, amount: int) -> bool:
         return amount <= self.player_money
 
+    def reset_money(self):
+        self.player_money = self.starting_money
+
 
 class PracticeMode(BaseGameMode):
     mode_type = Modes.PRACTICE
@@ -118,3 +126,6 @@ class PracticeMode(BaseGameMode):
 
     def can_afford_bet(self, amount: int) -> bool:
         return True
+
+    def reset_money(self):
+        self.practice_pot = 0

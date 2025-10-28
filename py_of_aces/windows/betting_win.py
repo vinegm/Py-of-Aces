@@ -26,45 +26,50 @@ class BettingWindow(BaseWindow):
     def draw(self) -> None:
         if self.__is_game_ongoing():
             self.switch_win(self.game_window)
-            return
+            return []
 
-        print(self.term.clear)
+        lines: list[str] = []
 
         mode_text = ""
         is_practice_mode = self.game.mode == Modes.PRACTICE
         if is_practice_mode:
             mode_text = " (PRACTICE)"
 
-        title = self.term.bold("PY OF ACES - BLACKJACK" + mode_text)
-        print(self.term.center(title))
-        print()
+        title = self.term.bold(
+            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}"
+        )
+        lines.append(title)
+        lines.append("")
 
         money_info = self.game.get_money_display
-        print(self.term.center(money_info))
-        print()
+        lines.append(money_info)
+        lines.append("")
 
         bet_display = f"Bet Amount: ${self.bet_amount}"
-        print(self.term.center(bet_display))
-        print()
+        lines.append(bet_display)
+        lines.append("")
 
-        print(self.term.center("Quick bets: [1] $10  [2] $25  [3] $50  [4] $100"))
-        print()
+        lines.append("Quick bets: [1] $10  [2] $25  [3] $50  [4] $100")
+        lines.append("")
 
         if is_practice_mode:
-            print(
-                self.term.center(
-                    "Practice Mode: No money lost, tracking total winnings"
-                )
-            )
-            print()
+            lines.append("Practice Mode: No money lost, tracking total winnings")
+            lines.append("")
 
         if self.message:
-            styled_message = self.term.yellow(self.message)
-            print(self.term.center(styled_message))
-            print()
+            styled_message = self.term.red(self.message)
+            lines.append(styled_message)
+            lines.append("")
+
+        if self.game.will_reshuffle:
+            styled_message = self.term.yellow("The deck will be reshuffled.")
+            lines.append(styled_message)
+            lines.append("")
 
         controls = "[q] Quit  [↑↓] Adjust bet  [1-4] Quick bets  [ENTER] Deal"
-        print(self.term.center(controls))
+        lines.append(controls)
+
+        return lines
 
     def __is_game_ongoing(self) -> bool:
         return self.game.state != GameState.BETTING

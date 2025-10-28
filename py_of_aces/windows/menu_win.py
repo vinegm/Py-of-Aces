@@ -22,19 +22,21 @@ class MenuWindow(BaseWindow):
         self.game = game
         self.betting_window = betting_window
 
-    def draw(self) -> None:
-        print(self.term.clear)
+    def draw(self) -> list[str]:
+        lines: list[str] = []
 
         title_art = get_title_ascii()
         for line in title_art.splitlines():
-            print(self.term.center(line))
-        print()
+            lines.append(line)
+        lines.append("")
 
         for i, item in enumerate(self.items):
             if i == self.selected_index:
-                print(self.term.center(self.term.reverse(item)))
+                lines.append(self.term.reverse(item))
                 continue
-            print(self.term.center(item))
+            lines.append(item)
+
+        return lines
 
     def handle_input(self, key: str) -> None:
         key = key.lower()

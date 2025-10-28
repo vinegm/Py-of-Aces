@@ -8,16 +8,16 @@ class TuiHandler:
     A class to handle the TUI application.
 
     args:
-        min_height: The minimum height of the terminal.
-        min_width: The minimum width of the terminal.
+        min_height: If the terminal height is less than this, shows the window "size_warning".
+        min_width: If the terminal width is less than this, shows the window "size_warning".
         windows: A dictionary of windows to add to the TUI.
         terminal_instance: An instance of blessed.Terminal to use.
     """
 
     def __init__(
         self,
-        min_height: int = None,
-        min_width: int = None,
+        min_height: int = 0,
+        min_width: int = 0,
         windows: dict = None,
         terminal_instance: Terminal = None,
     ):
@@ -28,7 +28,7 @@ class TuiHandler:
         self.running = True
 
         # Hook for easier resize
-        signal.signal(signal.SIGWINCH, self.__on_resize)
+        signal.signal(signal.SIGWINCH, self.__resize)
 
     def add_window(self, name: str, window_class: BaseWindow, *args, **kwargs):
         """
@@ -52,7 +52,7 @@ class TuiHandler:
         """
         self.__check_window_exists(name)
         self.active_window = self.windows[name]
-        self.active_window.draw()
+        self.active_window.render()
 
     def stop_process(self):
         """Stop the main execution loop."""
@@ -66,20 +66,34 @@ class TuiHandler:
         if name not in self.windows:
             raise ValueError(f"No window named '{name}' exists")
 
-    def __on_resize(self, signum, frame):
+    def __resize(self, signum, frame):
         """
         args:
             signum: The signal number.
             frame: The current stack frame.
         """
+        if self.active_window != self.windows.get("size_warning"):
+            self.current_window = self.active_window
+
+        if (
+            self.term.width < self.min_width or self.term.height < self.min_height
+        ) and "size_warning" in self.windows:
+            self.switch_win("size_warning")
+            return
+
+        self.active_window = self.current_window
         if self.active_window:
-            self.active_window.draw()
+            self.active_window.render()
 
     def __execution_loop(self):
+        self.__resize(None, None)
         while self.running:
-            key = self.term.inkey()
+            key = self.term.inkey(timeout=0.2)
+            if not key:
+                continue
+
             self.active_window.handle_input(key.name or key)
-            self.active_window.draw()
+            self.active_window.render()
 
     def start(self, start_window: str):
         """

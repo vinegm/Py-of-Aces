@@ -10,7 +10,7 @@ class GameState(Enum):
     DEALING = 1
     PLAYER_TURN = 2
     DEALER_TURN = 3
-    GAME_OVER = 4
+    ROUND_FINISHED = 4
 
 
 class GameResult(Enum):
@@ -153,6 +153,10 @@ class BlackjackGame:
         self.state = GameState.BETTING
         self.results = [None]
 
+    def reset_money(self):
+        """Reset the current game mode."""
+        self.current_mode.reset_money()
+
     def place_bet(self, amount: int) -> bool:
         """Place a bet for the current hand. Returns True if successful."""
         if not self.current_mode.place_bet(amount):
@@ -173,7 +177,7 @@ class BlackjackGame:
         is_player_blackjack = self.player_hands[0].is_blackjack
         is_dealer_blackjack = self.dealer_hand.is_blackjack
 
-        self.state = GameState.GAME_OVER
+        self.state = GameState.ROUND_FINISHED
         match (is_player_blackjack, is_dealer_blackjack):
             case (True, True):
                 self.results = [GameResult.PUSH]
@@ -279,7 +283,7 @@ class BlackjackGame:
 
         self.__determine_winners()
         self.dealer_hand.has_hidden_card = False
-        self.state = GameState.GAME_OVER
+        self.state = GameState.ROUND_FINISHED
 
     def __has_non_busted(self) -> bool:
         """Check if there is at least one non-busted player hand."""

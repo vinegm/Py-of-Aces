@@ -22,43 +22,56 @@ class GameWindow(BaseWindow):
         self.betting_window = betting_window
 
     def draw(self):
-        print(self.term.clear)
+        lines: list[str] = []
 
         mode_text = ""
         is_practice_mode = self.game.mode == Modes.PRACTICE
         if is_practice_mode:
             mode_text = " (PRACTICE)"
 
-        title = self.term.bold("PY OF ACES - BLACKJACK" + mode_text)
-        print(self.term.center(title))
-        print()
+        title = self.term.bold(
+            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}"
+        )
+        lines.append(title)
+        lines.append("")
 
         money_info = self.game.get_money_display
         money_info += f" | Total Bet: ${self.game.total_bet}"
-        print(self.term.center(money_info))
-        print()
+        lines.append(money_info)
+        lines.append("")
 
-        self.__draw_hands()
-        print()
-        if self.game.state == GameState.GAME_OVER:
-            self.__draw_game_result()
-            print()
+        lines.extend(self.__draw_hands())
+        lines.append("")
+
+        if self.game.state == GameState.ROUND_FINISHED:
+            lines.extend(self.__draw_game_result())
+            lines.append("")
 
         if self.message:
-            styled_message = self.term.yellow(self.message)
-            print(self.term.center(styled_message))
-            print()
+            styled_message = self.term.red(self.message)
+            lines.append(styled_message)
+            lines.append("")
 
-        self.__draw_controls()
+        if self.game.will_reshuffle:
+            styled_message = self.term.yellow(
+                "After this round, the deck will be reshuffled."
+            )
+            lines.append(styled_message)
+            lines.append("")
 
-    def __draw_hands(self):
-        print(self.term.center("DEALER"))
+        lines.extend(self.__draw_controls())
+
+        return lines
+
+    def __draw_hands(self) -> list[str]:
+        lines: list[str] = []
+        lines.append("DEALER")
 
         dealer_hand = self.game.dealer_hand
-        self.__draw_cards(dealer_hand)
-        print()
+        lines.extend(self.__draw_cards(dealer_hand))
+        lines.append("")
 
-        print(self.term.center("PLAYER"))
+        lines.append("PLAYER")
 
         has_multiple_hands = len(self.game.player_hands) > 1
         for hand_index, hand in enumerate(self.game.player_hands):
@@ -67,11 +80,14 @@ class GameWindow(BaseWindow):
                 if hand_index == self.game.current_hand_index:
                     hand_title += " (ACTIVE)"
 
-                print(self.term.center(hand_title))
+                lines.append(hand_title)
 
-            self.__draw_cards(hand)
+            lines.extend(self.__draw_cards(hand))
 
-    def __draw_cards(self, hand: Hand) -> None:
+        return lines
+
+    def __draw_cards(self, hand: Hand) -> list[str]:
+        lines: list[str] = []
         card_arts = []
         has_hidden = hand.has_hidden_card
 
@@ -85,13 +101,13 @@ class GameWindow(BaseWindow):
 
         combined_cards = join_cards(*card_arts)
         for line in combined_cards.splitlines():
-            print(self.term.center(line))
+            lines.append(line)
 
         hand_info = ""
         if has_hidden:
             hand_info += f"Showing: {hand.get_showing_value()}"
-            print(self.term.center(hand_info))
-            return
+            lines.append(hand_info)
+            return lines
 
         hand_info += f"Total: {hand.get_showing_value()}"
         if hand.is_blackjack:
@@ -100,9 +116,11 @@ class GameWindow(BaseWindow):
         elif hand.is_bust:
             hand_info += " (BUST!)"
 
-        print(self.term.center(hand_info))
+        lines.append(hand_info)
+        return lines
 
-    def __draw_game_result(self) -> None:
+    def __draw_game_result(self) -> list[str]:
+        lines: list[str] = []
         total_winnings = self.game.get_winnings()
 
         summary_text = ""
@@ -113,13 +131,14 @@ class GameWindow(BaseWindow):
             summary_text += f"Result: -{total_bet}$"
 
         styled_result = self.term.bold_green(summary_text)
-        print(self.term.center(styled_result))
+        lines.append(styled_result)
+        return lines
 
-    def __draw_controls(self):
+    def __draw_controls(self) -> list[str]:
         controls = ""
         match self.game.state:
             case GameState.PLAYER_TURN:
-                controls += "[h] Hit  [s] Stand"
+                controls += "[h] Hit  [SPACE] Stand"
 
                 if self.game.can_double_down:
                     controls += "  [d] Double Down"
@@ -129,26 +148,42 @@ class GameWindow(BaseWindow):
 
                 controls += "  [q] Quit"
 
-            case GameState.GAME_OVER:
-                controls += "[SPACE] New Round [q] Quit"
+            case GameState.ROUND_FINISHED:
+                if self.game.available_money > 0:
+                    controls += "[ENTER] New Round  "
+                controls += "[r] Restart money  "
+                controls += "[q] Quit"
 
-        print(self.term.center(controls))
+        return [controls]
 
     def handle_input(self, key: str) -> None:
         """Handle user input based on the current game state."""
         self.message = ""
+        self.info = ""
         key = key.lower()
 
         if key in quit_keys:
             self.switch_win(self.menu_window)
             return
 
-        match self.game.state:
-            case GameState.PLAYER_TURN:
-                self.__handle_player_turn_input(key)
+        if self.game.state == GameState.PLAYER_TURN:
+            self.__handle_player_turn_input(key)
+            return
 
-            case GameState.GAME_OVER:
-                self.__handle_game_over_input(key)
+        if self.game.state != GameState.ROUND_FINISHED:
+            return
+
+        if key == "r":
+            self.game.reset_money()
+
+        if key in enter_keys:
+            self.game.finish_round()
+            if self.game.is_game_over:
+                self.message = "Game Over! No money left."
+                return
+
+        self.game.start_new_round()
+        self.switch_win(self.betting_window)
 
     def __handle_player_turn_input(self, key: str):
         """Handle input during the player's turn."""
@@ -157,7 +192,7 @@ class GameWindow(BaseWindow):
                 if not self.game.hit():
                     self.message = "Cannot hit right now!"
 
-            case "s":
+            case " ":
                 if not self.game.stand():
                     self.message = "Cannot stand right now!"
 
@@ -165,17 +200,6 @@ class GameWindow(BaseWindow):
                 if not self.game.double_down():
                     self.message = "Cannot double down!"
 
-            case "p":
+            case "s":
                 if not self.game.split():
-                    self.message = "Cannot split!"
-
-    def __handle_game_over_input(self, key: str) -> None:
-        """Handle input when the game is over."""
-        if key in enter_keys:
-            self.game.finish_round()
-            if self.game.is_game_over:
-                self.message = "Game Over! No money left."
-                return
-
-            self.game.start_new_round()
-            self.switch_win(self.betting_window)
+                    self.message = "Cannot split without a pair!"

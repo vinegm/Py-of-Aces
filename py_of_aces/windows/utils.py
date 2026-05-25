@@ -15,6 +15,10 @@ class BaseWindow:
     def handle_input(self, key: str):
         raise NotImplementedError
 
+    def tick(self) -> bool:
+        """Advance window state without input. Return True to trigger a render."""
+        return False
+
     def render(self) -> None:
         """Renders the lines from draw() centered vertically and horizontally."""
         lines = self.draw() or []

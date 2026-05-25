@@ -1,7 +1,9 @@
+import time
+
 from .utils import BaseWindow
 from ..utils import get_card_ascii, join_cards
 from ..game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
-from ..config import enter_keys, quit_keys
+from ..config import enter_keys, quit_keys, init_dealer_action_delay
 
 result_text_mapping = {
     GameResult.WIN: "YOU WIN",
@@ -20,6 +22,8 @@ class GameWindow(BaseWindow):
         self.message = ""
         self.menu_window = menu_window
         self.betting_window = betting_window
+        self._last_state = self.game.state
+        self._dealer_next_action_at = 0.0
 
     def draw(self):
         lines: list[str] = []
@@ -43,6 +47,10 @@ class GameWindow(BaseWindow):
         lines.extend(self.__draw_hands())
         lines.append("")
 
+        if self.game.state == GameState.DEALER_TURN:
+            lines.append(self.term.yellow("Dealer playing..."))
+            lines.append("")
+
         if self.game.state == GameState.ROUND_FINISHED:
             lines.extend(self.__draw_game_result())
             lines.append("")
@@ -62,6 +70,29 @@ class GameWindow(BaseWindow):
         lines.extend(self.__draw_controls())
 
         return lines
+
+    def tick(self) -> bool:
+        current_state = self.game.state
+        if current_state != self._last_state:
+            self._last_state = current_state
+            if current_state == GameState.DEALER_TURN:
+                self._dealer_next_action_at = (
+                    time.monotonic() + init_dealer_action_delay
+                )
+            return False
+
+        if current_state != GameState.DEALER_TURN:
+            return False
+
+        now = time.monotonic()
+        if now < self._dealer_next_action_at:
+            return False
+
+        if self.game.advance_dealer_turn():
+            self._dealer_next_action_at = now + init_dealer_action_delay
+            return True
+
+        return False
 
     def __draw_hands(self) -> list[str]:
         lines: list[str] = []

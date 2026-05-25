@@ -43,9 +43,10 @@ class BlackjackGame:
         self.dealer_stand_value = dealer_stand_value
         self.player_hands: list[Hand] = [Hand()]
         self.current_hand_index: int = 0
+        self._dealer_revealed: bool = False
 
         self.bets: list[int] = [0]
-        self.current_mode: BaseGameMode | None = BaseGameMode
+        self.current_mode: BaseGameMode = BaseGameMode()
 
         self.state: GameState = GameState.BETTING
         self.results: list[GameResult | None] = [None]
@@ -147,6 +148,7 @@ class BlackjackGame:
         self.dealer_hand.reset()
         self.player_hands = [Hand()]
         self.current_hand_index = 0
+        self._dealer_revealed = False
 
         self.bets = [0]
 
@@ -263,7 +265,7 @@ class BlackjackGame:
 
         return new_hand
 
-    def __finish_current_hand(self, result: GameResult = None) -> None:
+    def __finish_current_hand(self, result: GameResult | None = None) -> None:
         """Finish the current hand and move to next or dealer turn."""
         if result is not None:
             self.results[self.current_hand_index] = result
@@ -273,17 +275,28 @@ class BlackjackGame:
             return
 
         self.state = GameState.DEALER_TURN
-        self.__dealer_play()
+        self._dealer_revealed = False
 
-    def __dealer_play(self) -> None:
-        """Automated dealer play."""
-        if self.__has_non_busted():
-            while self.dealer_hand.get_value() < self.dealer_stand_value:
-                self.dealer_hand.add_card(self.deck.deal(1)[0])
+    def advance_dealer_turn(self) -> bool:
+        """Advance the dealer turn by one action. Returns True if state changed."""
+        if self.state != GameState.DEALER_TURN:
+            return False
+
+        if not self._dealer_revealed:
+            self.dealer_hand.has_hidden_card = False
+            self._dealer_revealed = True
+            return True
+
+        if (
+            self.__has_non_busted()
+            and self.dealer_hand.get_value() < self.dealer_stand_value
+        ):
+            self.dealer_hand.add_card(self.deck.deal(1)[0])
+            return True
 
         self.__determine_winners()
-        self.dealer_hand.has_hidden_card = False
         self.state = GameState.ROUND_FINISHED
+        return True
 
     def __has_non_busted(self) -> bool:
         """Check if there is at least one non-busted player hand."""

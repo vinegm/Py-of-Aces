@@ -18,19 +18,19 @@ class TuiHandler:
         self,
         min_height: int = 0,
         min_width: int = 0,
-        windows: dict = None,
-        terminal_instance: Terminal = None,
+        windows: dict = {},
+        terminal_instance: Terminal = Terminal(),
     ):
         self.min_height = min_height
         self.min_width = min_width
         self.windows = windows or {}
-        self.term = terminal_instance or Terminal()
+        self.term = terminal_instance
         self.running = True
 
         # Hook for easier resize
         signal.signal(signal.SIGWINCH, self.__resize)
 
-    def add_window(self, name: str, window_class: BaseWindow, *args, **kwargs):
+    def add_window(self, name: str, window_class: type[BaseWindow], *args, **kwargs):
         """
         args:
             name: The name of the window, used to call the window.
@@ -66,7 +66,7 @@ class TuiHandler:
         if name not in self.windows:
             raise ValueError(f"No window named '{name}' exists")
 
-    def __resize(self, signum, frame):
+    def __resize(self, _signum, _frame):
         """
         args:
             signum: The signal number.
@@ -90,6 +90,8 @@ class TuiHandler:
         while self.running:
             key = self.term.inkey(timeout=0.2)
             if not key:
+                if self.active_window.tick():
+                    self.active_window.render()
                 continue
 
             self.active_window.handle_input(key.name or key)

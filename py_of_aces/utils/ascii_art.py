@@ -1,7 +1,7 @@
 def get_card_ascii(
     rank: str,
     suit: str,
-    face_down_text: str = None,
+    face_down_text: str | None = None,
     card_width: int = 10,
     card_height: int = 7,
 ) -> str:
@@ -49,7 +49,7 @@ def get_card_ascii(
     return "\n".join(lines)
 
 
-def join_cards(*cards: list[str]) -> str:
+def join_cards(*cards: str) -> str:
     """
     cards: list of ASCII card strings
     Returns a string with the cards side by side.
@@ -60,7 +60,7 @@ def join_cards(*cards: list[str]) -> str:
     return "\n".join(combined_lines)
 
 
-def get_title_ascii(style: str = None) -> str:
+def get_title_ascii(style: str = "ascii") -> str:
     title = """██████╗ ██╗   ██╗     ██████╗ ███████╗
 ██╔══██╗╚██╗ ██╔╝    ██╔═══██╗██╔════╝
 ██████╔╝ ╚████╔╝     ██║   ██║█████╗  

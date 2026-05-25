@@ -8,4 +8,5 @@ init_default_bet: int = 100
 init_bet_options: dict[str, int] = {"1": 10, "2": 25, "3": 50, "4": 100}
 init_num_cards_reshuffle: int = 15
 init_dealer_stand_value: int = 17
+init_dealer_action_delay: float = 0.6
 init_max_splits: int = 3

@@ -23,7 +23,7 @@ class BettingWindow(BaseWindow):
         self.menu_window = menu_window
         self.game_window = game_window
 
-    def draw(self) -> None:
+    def draw(self):
         if self.__is_game_ongoing():
             self.switch_win(self.game_window)
             return []

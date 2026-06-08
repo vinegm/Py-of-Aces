@@ -12,7 +12,7 @@ class BaseWindow:
     def draw(self):
         raise NotImplementedError
 
-    def handle_input(self, key: str):
+    def handle_input(self, _: str):
         raise NotImplementedError
 
     def tick(self) -> bool:

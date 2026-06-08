@@ -2,7 +2,7 @@ from enum import Enum
 from .deck import BlackjackDeck
 from .hand import Hand
 from .game_modes import Modes, BaseGameMode, NormalMode, PracticeMode
-from ..config import init_starting_money, init_dealer_stand_value, init_max_splits
+from ..config import config
 
 
 class GameState(Enum):
@@ -31,9 +31,9 @@ winnings_mult_map = {
 class BlackjackGame:
     def __init__(
         self,
-        starting_money: int = init_starting_money,
-        dealer_stand_value: int = init_dealer_stand_value,
-        max_splits: int = init_max_splits,
+        starting_money: int = config.starting_money,
+        dealer_stand_value: int = config.dealer_stand_value,
+        max_splits: int = config.max_splits,
     ):
         self.starting_money = starting_money
         self.max_splits = max_splits

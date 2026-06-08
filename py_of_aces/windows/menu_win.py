@@ -1,7 +1,7 @@
 from .utils import BaseWindow
 from ..utils import get_title_ascii
 from ..game_logic import BlackjackGame, Modes
-from ..config import enter_keys, up_keys, down_keys, quit_keys
+from ..config import config
 
 
 class MenuWindow(BaseWindow):
@@ -41,16 +41,16 @@ class MenuWindow(BaseWindow):
     def handle_input(self, key: str) -> None:
         key = key.lower()
 
-        if key in up_keys:
+        if key in config.up_keys:
             self.selected_index = (self.selected_index - 1) % self.item_count
 
-        elif key in down_keys:
+        elif key in config.down_keys:
             self.selected_index = (self.selected_index + 1) % self.item_count
 
-        elif key in enter_keys:
+        elif key in config.enter_keys:
             self.__handle_selection()
 
-        elif key in quit_keys:
+        elif key in config.quit_keys:
             self.stop_process()
 
     def __handle_selection(self) -> None:

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from .utils import BaseWindow
 from ..utils import get_card_ascii, join_cards
 from ..game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
-from ..config import enter_keys, quit_keys, init_dealer_action_delay
+from ..config import config
 
 result_text_mapping = {
     GameResult.WIN: "YOU WIN",
@@ -18,21 +18,29 @@ result_text_mapping = {
 @dataclass
 class _RevealAnimation:
     frames: list[str]
+    frame_duration: float
     frame_index: int = 0
+    _next_frame_at: float = 0.0
+
+    def __post_init__(self) -> None:
+        self._next_frame_at = time.monotonic() + self.frame_duration
 
     def current_frame(self) -> str:
         return self.frames[self.frame_index]
 
-    def advance(self) -> bool:
+    def advance(self, now: float) -> bool:
+        """Move to the next frame if due. Returns False once the animation is finished."""
         if self.frame_index >= len(self.frames) - 1:
             return False
 
-        self.frame_index += 1
+        if now >= self._next_frame_at:
+            self.frame_index += 1
+            self._next_frame_at = now + self.frame_duration
+
         return True
 
 
 class GameWindow(BaseWindow):
-    _REVEAL_STEPS = 7
     _REVEAL_RING_WIDTH = 0.8
     _REVEAL_RING_CHAR = "/"
     _REVEAL_ORIGIN_X = -0.75
@@ -106,7 +114,7 @@ class GameWindow(BaseWindow):
             self._last_state = current_state
             if current_state == GameState.DEALER_TURN:
                 self._dealer_next_action_at = (
-                    time.monotonic() + init_dealer_action_delay
+                    time.monotonic() + config.dealer_action_delay
                 )
             return render_needed
 
@@ -115,14 +123,14 @@ class GameWindow(BaseWindow):
 
         now = time.monotonic()
         if ("dealer", 0) in self._reveal_animations:
-            self._dealer_next_action_at = now + init_dealer_action_delay
+            self._dealer_next_action_at = now + config.dealer_action_delay
             return render_needed
 
         if now < self._dealer_next_action_at:
             return render_needed
 
         if self.game.advance_dealer_turn():
-            self._dealer_next_action_at = now + init_dealer_action_delay
+            self._dealer_next_action_at = now + config.dealer_action_delay
             return True
 
         return render_needed
@@ -197,21 +205,24 @@ class GameWindow(BaseWindow):
         showing_count = len(showing_cards)
         has_hidden = hand.has_hidden_card
 
-        prev = self._hand_states.get(key)
-        if prev:
-            prev_showing, prev_hidden = prev
-            if prev_hidden and not has_hidden and hand.cards:
-                self.__start_reveal_animation(key, hand.cards[-1])
-            elif showing_count > prev_showing:
+        if config.animations_enabled:
+            prev = self._hand_states.get(key)
+            if prev:
+                prev_showing, prev_hidden = prev
+                if prev_hidden and not has_hidden and hand.cards:
+                    self.__start_reveal_animation(key, hand.cards[-1])
+                elif showing_count > prev_showing:
+                    self.__start_reveal_animation(key, showing_cards[-1])
+            elif showing_count:
                 self.__start_reveal_animation(key, showing_cards[-1])
-        elif showing_count:
-            self.__start_reveal_animation(key, showing_cards[-1])
 
         self._hand_states[key] = (showing_count, has_hidden)
 
     def __start_reveal_animation(self, key: tuple[str, int], card) -> None:
         frames = self.__build_reveal_frames(card)
-        self._reveal_animations[key] = _RevealAnimation(frames)
+        self._reveal_animations[key] = _RevealAnimation(
+            frames, config.reveal_frame_duration
+        )
 
     def __build_reveal_frames(self, card) -> list[str]:
         back = get_card_ascii("?", "?", face_down_text="REVEAL")
@@ -223,7 +234,7 @@ class GameWindow(BaseWindow):
 
         origin_x, origin_y = self._REVEAL_ORIGIN_X, self._REVEAL_ORIGIN_Y
         x_scale, y_scale = self._REVEAL_X_SCALE, self._REVEAL_Y_SCALE
-        steps = self._REVEAL_STEPS
+        steps = max(config.reveal_steps, 1)
 
         max_dist = (
             math.hypot(
@@ -264,9 +275,7 @@ class GameWindow(BaseWindow):
         ring_char = self._REVEAL_RING_CHAR
 
         blended_lines: list[str] = []
-        for row_index, (back_line, face_line) in enumerate(
-            zip(back_lines, face_lines)
-        ):
+        for row_index, (back_line, face_line) in enumerate(zip(back_lines, face_lines)):
             blended = []
             for col_index, back_char in enumerate(back_line):
                 dist = math.hypot(
@@ -291,10 +300,11 @@ class GameWindow(BaseWindow):
         if not self._reveal_animations:
             return False
 
+        now = time.monotonic()
         to_remove = [
             key
             for key, animation in self._reveal_animations.items()
-            if not animation.advance()
+            if not animation.advance(now)
         ]
         for key in to_remove:
             self._reveal_animations.pop(key, None)
@@ -355,7 +365,7 @@ class GameWindow(BaseWindow):
         self.info = ""
         key = key.lower()
 
-        if key in quit_keys:
+        if key in config.quit_keys:
             self.switch_win(self.menu_window)
             return
 
@@ -369,7 +379,7 @@ class GameWindow(BaseWindow):
         if key == "r":
             self.game.reset_money()
 
-        if key in enter_keys:
+        if key in config.enter_keys:
             self.game.finish_round()
             if self.game.is_game_over:
                 self.message = "Game Over! No money left."

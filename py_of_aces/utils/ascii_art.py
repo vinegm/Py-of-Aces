@@ -60,7 +60,7 @@ def join_cards(*cards: str) -> str:
     return "\n".join(combined_lines)
 
 
-def get_title_ascii(style: str = "ascii") -> str:
+def get_title_ascii(_style: str = "ascii") -> str:
     title = """██████╗ ██╗   ██╗     ██████╗ ███████╗
 ██╔══██╗╚██╗ ██╔╝    ██╔═══██╗██╔════╝
 ██████╔╝ ╚████╔╝     ██║   ██║█████╗  

@@ -1,19 +1,12 @@
 from .utils import BaseWindow
 from ..game_logic import BlackjackGame, GameState, Modes
-from ..config import (
-    init_default_bet,
-    init_bet_options,
-    quit_keys,
-    enter_keys,
-    up_keys,
-    down_keys,
-)
+from ..config import config
 
 
 class BettingWindow(BaseWindow):
     message = ""
-    bet_amount = init_default_bet
-    bet_options = init_bet_options
+    bet_amount = config.default_bet
+    bet_options = config.bet_options
 
     def __init__(
         self, game: BlackjackGame, menu_window: str, game_window: str, **kwargs
@@ -79,10 +72,10 @@ class BettingWindow(BaseWindow):
         key = key.lower()
         available_money = self.game.available_money
 
-        if key in quit_keys:
+        if key in config.quit_keys:
             self.switch_win(self.menu_window)
 
-        elif key in enter_keys:
+        elif key in config.enter_keys:
             if not self.game.place_bet(self.bet_amount):
                 self.message = "Invalid bet amount!"
                 return
@@ -90,10 +83,10 @@ class BettingWindow(BaseWindow):
             self.game.deal_initial_cards()
             self.switch_win(self.game_window)
 
-        elif key in up_keys:
+        elif key in config.up_keys:
             self.bet_amount = min(self.bet_amount + 5, available_money)
 
-        elif key in down_keys:
+        elif key in config.down_keys:
             self.bet_amount = max(self.bet_amount - 5, 5)
 
         elif key in self.bet_options:

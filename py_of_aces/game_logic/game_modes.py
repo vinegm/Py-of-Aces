@@ -10,19 +10,19 @@ class Modes(Enum):
 class BaseGameMode:
     mode_type = Modes.BASE
 
-    def place_bet(self, amount: int) -> bool:
+    def place_bet(self, _amount: int) -> bool:
         """Place a bet. Returns True if successful."""
         raise NotImplementedError
 
-    def double_down_bet(self, current_bet: int) -> bool:
+    def double_down_bet(self, _current_bet: int) -> bool:
         """Handle doubling down a bet. Returns True if successful."""
         raise NotImplementedError
 
-    def split_bet(self, current_bet: int) -> bool:
+    def split_bet(self, _current_bet: int) -> bool:
         """Handle splitting bet. Returns True if successful."""
         raise NotImplementedError
 
-    def finish_round(self, winnings: int, total_bet: int):
+    def finish_round(self, _winnings: int, _total_bet: int):
         """Process round completion with winnings and total bet."""
         raise NotImplementedError
 
@@ -30,7 +30,7 @@ class BaseGameMode:
         """Get the money display string for this mode."""
         raise NotImplementedError
 
-    def get_available_money(self) -> int:
+    def get_available_money(self) -> int | float:
         """Get available money for betting."""
         raise NotImplementedError
 
@@ -39,7 +39,7 @@ class BaseGameMode:
         """Check if the game should end (e.g., out of money)."""
         raise NotImplementedError
 
-    def can_afford_bet(self, amount: int) -> bool:
+    def can_afford_bet(self, _amount: int) -> bool:
         """Check if player can afford a specific bet amount."""
         raise NotImplementedError
 
@@ -117,7 +117,7 @@ class PracticeMode(BaseGameMode):
     def get_money_display(self) -> str:
         return f"Practice Pot: {self.practice_pot:+}$"
 
-    def get_available_money(self) -> int:
+    def get_available_money(self) -> int | float:
         return float("inf")
 
     @property

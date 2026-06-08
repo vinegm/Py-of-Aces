@@ -1,5 +1,5 @@
 import random
-from ..config import init_num_cards_reshuffle
+from ..config import config
 
 
 class Card:
@@ -34,7 +34,7 @@ class BlackjackDeck:
     ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
     def __init__(
-        self, shuffle: bool = True, num_cards_reshuffle: int = init_num_cards_reshuffle
+        self, shuffle: bool = True, num_cards_reshuffle: int = config.num_cards_reshuffle
     ):
         self.cards = []
         self.num_cards_reshuffle = num_cards_reshuffle

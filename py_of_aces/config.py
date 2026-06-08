@@ -14,6 +14,7 @@ quit = ["key_escape", "q"]
 [game]
 starting_money = 1000
 default_bet = 100
+num_decks = 1
 num_cards_reshuffle = 15
 dealer_stand_value = 17
 dealer_action_delay = 0.6
@@ -52,6 +53,7 @@ class Config:
         self.bet_options: dict[str, int] = data.get(
             "bet_options", {"1": 10, "2": 25, "3": 50, "4": 100}
         )
+        self.num_decks: int = game.get("num_decks", 1)
         self.num_cards_reshuffle: int = game.get("num_cards_reshuffle", 15)
         self.dealer_stand_value: int = game.get("dealer_stand_value", 17)
         self.dealer_action_delay: float = game.get("dealer_action_delay", 0.6)

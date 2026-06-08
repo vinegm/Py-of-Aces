@@ -34,18 +34,23 @@ class BlackjackDeck:
     ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 
     def __init__(
-        self, shuffle: bool = True, num_cards_reshuffle: int = config.num_cards_reshuffle
+        self,
+        shuffle: bool = True,
+        num_decks: int = config.num_decks,
+        num_cards_reshuffle: int = config.num_cards_reshuffle,
     ):
         self.cards = []
+        self.num_decks = max(num_decks, 1)
         self.num_cards_reshuffle = num_cards_reshuffle
 
         self.reset_deck(shuffle=shuffle)
 
     def __build_deck(self) -> None:
         """Create the deck with the given number of decks."""
-        for suit in self.suits:
-            for rank in self.ranks:
-                self.cards.append(Card(rank, suit))
+        for _ in range(self.num_decks):
+            for suit in self.suits:
+                for rank in self.ranks:
+                    self.cards.append(Card(rank, suit))
 
     def shuffle(self) -> None:
         """Shuffle the deck in place."""
@@ -66,6 +71,7 @@ class BlackjackDeck:
 
     def reset_deck(self, shuffle: bool = True) -> None:
         """Reset to a full deck again."""
+        self.cards = []
         self.__build_deck()
         if shuffle:
             self.shuffle()

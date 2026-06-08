@@ -77,6 +77,9 @@ class GameWindow(BaseWindow):
 
         money_info = self.game.get_money_display
         money_info += f" | Total Bet: ${self.game.total_bet}"
+        if is_practice_mode:
+            money_info += f" | Shoe: {len(self.game.deck)} cards"
+
         lines.append(money_info)
         lines.append("")
 

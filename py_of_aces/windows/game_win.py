@@ -1,4 +1,6 @@
 import time
+import math
+from dataclasses import dataclass
 
 from .utils import BaseWindow
 from ..utils import get_card_ascii, join_cards
@@ -13,7 +15,31 @@ result_text_mapping = {
 }
 
 
+@dataclass
+class _RevealAnimation:
+    frames: list[str]
+    frame_index: int = 0
+
+    def current_frame(self) -> str:
+        return self.frames[self.frame_index]
+
+    def advance(self) -> bool:
+        if self.frame_index >= len(self.frames) - 1:
+            return False
+
+        self.frame_index += 1
+        return True
+
+
 class GameWindow(BaseWindow):
+    _REVEAL_STEPS = 7
+    _REVEAL_RING_WIDTH = 0.8
+    _REVEAL_RING_CHAR = "/"
+    _REVEAL_ORIGIN_X = -0.75
+    _REVEAL_ORIGIN_Y = -0.75
+    _REVEAL_X_SCALE = 0.6
+    _REVEAL_Y_SCALE = 1.0
+
     def __init__(
         self, game: BlackjackGame, menu_window: str, betting_window: str, **kwargs
     ):
@@ -24,6 +50,8 @@ class GameWindow(BaseWindow):
         self.betting_window = betting_window
         self._last_state = self.game.state
         self._dealer_next_action_at = 0.0
+        self._hand_states: dict[tuple[str, int], tuple[int, bool]] = {}
+        self._reveal_animations: dict[tuple[str, int], _RevealAnimation] = {}
 
     def draw(self):
         lines: list[str] = []
@@ -72,6 +100,7 @@ class GameWindow(BaseWindow):
         return lines
 
     def tick(self) -> bool:
+        render_needed = self.__advance_reveal_animations()
         current_state = self.game.state
         if current_state != self._last_state:
             self._last_state = current_state
@@ -79,27 +108,31 @@ class GameWindow(BaseWindow):
                 self._dealer_next_action_at = (
                     time.monotonic() + init_dealer_action_delay
                 )
-            return False
+            return render_needed
 
         if current_state != GameState.DEALER_TURN:
-            return False
+            return render_needed
 
         now = time.monotonic()
+        if ("dealer", 0) in self._reveal_animations:
+            self._dealer_next_action_at = now + init_dealer_action_delay
+            return render_needed
+
         if now < self._dealer_next_action_at:
-            return False
+            return render_needed
 
         if self.game.advance_dealer_turn():
             self._dealer_next_action_at = now + init_dealer_action_delay
             return True
 
-        return False
+        return render_needed
 
     def __draw_hands(self) -> list[str]:
         lines: list[str] = []
         lines.append("DEALER")
 
         dealer_hand = self.game.dealer_hand
-        lines.extend(self.__draw_cards(dealer_hand))
+        lines.extend(self.__draw_cards(dealer_hand, "dealer", 0))
         lines.append("")
 
         lines.append("PLAYER")
@@ -113,18 +146,27 @@ class GameWindow(BaseWindow):
 
                 lines.append(hand_title)
 
-            lines.extend(self.__draw_cards(hand))
+            lines.extend(self.__draw_cards(hand, "player", hand_index))
+
+        self.__cleanup_hand_state()
 
         return lines
 
-    def __draw_cards(self, hand: Hand) -> list[str]:
+    def __draw_cards(self, hand: Hand, owner: str, hand_index: int) -> list[str]:
         lines: list[str] = []
         card_arts = []
         has_hidden = hand.has_hidden_card
+        key = (owner, hand_index)
+        self.__update_reveal_state(hand, key)
+        animation = self._reveal_animations.get(key)
 
-        for card in hand.get_showing_cards():
+        showing_cards = hand.get_showing_cards()
+        for card in showing_cards:
             card_art = get_card_ascii(card.rank, card.suit)
             card_arts.append(card_art)
+
+        if animation and showing_cards:
+            card_arts[-1] = animation.current_frame()
 
         if has_hidden:
             hidden_art = get_card_ascii("?", "?", face_down_text="HIDDEN")
@@ -149,6 +191,126 @@ class GameWindow(BaseWindow):
 
         lines.append(hand_info)
         return lines
+
+    def __update_reveal_state(self, hand: Hand, key: tuple[str, int]) -> None:
+        showing_cards = hand.get_showing_cards()
+        showing_count = len(showing_cards)
+        has_hidden = hand.has_hidden_card
+
+        prev = self._hand_states.get(key)
+        if prev:
+            prev_showing, prev_hidden = prev
+            if prev_hidden and not has_hidden and hand.cards:
+                self.__start_reveal_animation(key, hand.cards[-1])
+            elif showing_count > prev_showing:
+                self.__start_reveal_animation(key, showing_cards[-1])
+        elif showing_count:
+            self.__start_reveal_animation(key, showing_cards[-1])
+
+        self._hand_states[key] = (showing_count, has_hidden)
+
+    def __start_reveal_animation(self, key: tuple[str, int], card) -> None:
+        frames = self.__build_reveal_frames(card)
+        self._reveal_animations[key] = _RevealAnimation(frames)
+
+    def __build_reveal_frames(self, card) -> list[str]:
+        back = get_card_ascii("?", "?", face_down_text="REVEAL")
+        face = get_card_ascii(card.rank, card.suit)
+        back_lines = back.splitlines()
+        face_lines = face.splitlines()
+        width = len(back_lines[0]) if back_lines else 0
+        height = len(back_lines)
+
+        origin_x, origin_y = self._REVEAL_ORIGIN_X, self._REVEAL_ORIGIN_Y
+        x_scale, y_scale = self._REVEAL_X_SCALE, self._REVEAL_Y_SCALE
+        steps = self._REVEAL_STEPS
+
+        max_dist = (
+            math.hypot(
+                max(width - 1 - origin_x, 0) * x_scale,
+                max(height - 1 - origin_y, 0) * y_scale,
+            )
+            or 1.0
+        )
+
+        frames = [back]
+        for step in range(1, steps + 1):
+            radius = max_dist * step / steps
+            frames.append(
+                self.__blend_card_radial(
+                    back_lines,
+                    face_lines,
+                    radius,
+                    origin_x,
+                    origin_y,
+                    x_scale,
+                    y_scale,
+                )
+            )
+
+        return frames
+
+    def __blend_card_radial(
+        self,
+        back_lines: list[str],
+        face_lines: list[str],
+        radius: float,
+        origin_x: float,
+        origin_y: float,
+        x_scale: float,
+        y_scale: float,
+    ) -> str:
+        ring_width = self._REVEAL_RING_WIDTH
+        ring_char = self._REVEAL_RING_CHAR
+
+        blended_lines: list[str] = []
+        for row_index, (back_line, face_line) in enumerate(
+            zip(back_lines, face_lines)
+        ):
+            blended = []
+            for col_index, back_char in enumerate(back_line):
+                dist = math.hypot(
+                    (col_index - origin_x) * x_scale,
+                    (row_index - origin_y) * y_scale,
+                )
+                if dist <= radius and col_index < len(face_line):
+                    blended.append(face_line[col_index])
+                elif (
+                    dist <= radius + ring_width
+                    and back_char not in "+-|"
+                    and col_index < len(face_line)
+                ):
+                    blended.append(ring_char)
+                else:
+                    blended.append(back_char)
+            blended_lines.append("".join(blended))
+
+        return "\n".join(blended_lines)
+
+    def __advance_reveal_animations(self) -> bool:
+        if not self._reveal_animations:
+            return False
+
+        to_remove = [
+            key
+            for key, animation in self._reveal_animations.items()
+            if not animation.advance()
+        ]
+        for key in to_remove:
+            self._reveal_animations.pop(key, None)
+
+        return True
+
+    def __cleanup_hand_state(self) -> None:
+        active_keys = {("dealer", 0)}
+        active_keys.update(
+            ("player", index) for index in range(len(self.game.player_hands))
+        )
+
+        for key in list(self._hand_states.keys()):
+            if key not in active_keys:
+                self._hand_states.pop(key, None)
+                self._reveal_animations.pop(key, None)
 
     def __draw_game_result(self) -> list[str]:
         lines: list[str] = []

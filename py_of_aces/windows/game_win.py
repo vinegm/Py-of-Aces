@@ -355,7 +355,7 @@ class GameWindow(BaseWindow):
                 controls += "  [q] Quit"
 
             case GameState.ROUND_FINISHED:
-                if self.game.available_money > 0:
+                if self.game.available_money + self.game.get_winnings() > 0:
                     controls += "[ENTER] New Round  "
                 controls += "[r] Restart money  "
                 controls += "[q] Quit"
@@ -365,7 +365,6 @@ class GameWindow(BaseWindow):
     def handle_input(self, key: str) -> None:
         """Handle user input based on the current game state."""
         self.message = ""
-        self.info = ""
         key = key.lower()
 
         if key in config.quit_keys:
@@ -381,12 +380,17 @@ class GameWindow(BaseWindow):
 
         if key == "r":
             self.game.reset_money()
+            self.game.start_new_round()
+            self.switch_win(self.betting_window)
+            return
 
-        if key in config.enter_keys:
-            self.game.finish_round()
-            if self.game.is_game_over:
-                self.message = "Game Over! No money left."
-                return
+        if key not in config.enter_keys:
+            return
+
+        self.game.finish_round()
+        if self.game.is_game_over:
+            self.message = "Game Over! No money left."
+            return
 
         self.game.start_new_round()
         self.switch_win(self.betting_window)
@@ -406,6 +410,6 @@ class GameWindow(BaseWindow):
                 if not self.game.double_down():
                     self.message = "Cannot double down!"
 
-            case "s":
+            case "p":
                 if not self.game.split():
-                    self.message = "Cannot split without a pair!"
+                    self.message = "Cannot split right now!"

@@ -84,10 +84,10 @@ class BettingWindow(BaseWindow):
             self.switch_win(self.game_window)
 
         elif key in config.up_keys:
-            self.bet_amount = min(self.bet_amount + 5, available_money)
+            self.bet_amount = int(min(self.bet_amount + 5, available_money))
 
         elif key in config.down_keys:
             self.bet_amount = max(self.bet_amount - 5, 5)
 
         elif key in self.bet_options:
-            self.bet_amount = min(self.bet_options[key], available_money)
+            self.bet_amount = int(min(self.bet_options[key], available_money))

@@ -1,9 +1,13 @@
+from typing import Callable
 from blessed import Terminal
 
 
 class BaseWindow:
     def __init__(
-        self, terminal_instance: Terminal, switch_win: callable, stop_process: callable
+        self,
+        terminal_instance: Terminal,
+        switch_win: Callable[[str], None],
+        stop_process: Callable[[], None],
     ):
         self.term = terminal_instance
         self.switch_win = switch_win

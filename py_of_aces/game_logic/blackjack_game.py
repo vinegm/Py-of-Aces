@@ -105,7 +105,7 @@ class BlackjackGame:
         return self.current_mode.get_money_display()
 
     @property
-    def available_money(self) -> int:
+    def available_money(self) -> int | float:
         return self.current_mode.get_available_money()
 
     @property

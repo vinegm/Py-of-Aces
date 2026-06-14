@@ -58,11 +58,14 @@ class BlackjackDeck:
 
     def deal(self, n: int = 1) -> list[Card]:
         """
-        Deal n cards from the deck.
+        Deal n cards from the deck, resetting the shoe if it runs out.
 
         Returns:
             List of Card objects.
         """
+        if n > len(self.cards):
+            self.reset_deck()
+
         if n > len(self.cards):
             raise ValueError("Too many cards requested to deal.")
 

@@ -14,6 +14,13 @@ result_text_mapping = {
     GameResult.PUSH: "PUSH! Bet returned",
 }
 
+result_color_mapping = {
+    GameResult.WIN: "green",
+    GameResult.BLACKJACK: "bold_yellow",
+    GameResult.LOSE: "red",
+    GameResult.PUSH: "yellow",
+}
+
 
 @dataclass
 class _RevealAnimation:
@@ -327,18 +334,30 @@ class GameWindow(BaseWindow):
 
     def __draw_game_result(self) -> list[str]:
         lines: list[str] = []
-        total_winnings = self.game.get_winnings()
+        results = self.game.results
 
-        summary_text = ""
-        if total_winnings > 0:
-            summary_text += f"Result: +{total_winnings}$"
+        if len(results) > 1:
+            for hand_index, result in enumerate(results):
+                if result is None:
+                    continue
+                lines.append(f"Hand {hand_index + 1}: {self.__style_result(result)}")
+        elif results[0] is not None:
+            lines.append(self.__style_result(results[0]))
+
+        net_result = self.game.get_winnings() - self.game.total_bet
+        if net_result > 0:
+            styled_result = self.term.bold_green(f"Result: +{net_result}$")
+        elif net_result < 0:
+            styled_result = self.term.bold_red(f"Result: {net_result}$")
         else:
-            total_bet = self.game.total_bet
-            summary_text += f"Result: -{total_bet}$"
+            styled_result = self.term.bold_yellow("Result: ±0$")
 
-        styled_result = self.term.bold_green(summary_text)
         lines.append(styled_result)
         return lines
+
+    def __style_result(self, result: GameResult) -> str:
+        color = getattr(self.term, result_color_mapping[result])
+        return color(result_text_mapping[result])
 
     def __draw_controls(self) -> list[str]:
         controls = ""

@@ -1,3 +1,6 @@
+suit_symbol_mapping = {"s": "♠", "h": "♥", "d": "♦", "c": "♣"}
+
+
 def get_card_ascii(
     rank: str,
     suit: str,
@@ -6,6 +9,7 @@ def get_card_ascii(
     card_height: int = 7,
 ) -> str:
     min_width, min_height = 5, 5
+    suit = suit_symbol_mapping.get(suit, suit)
     if card_width < min_width or card_height < min_height:
         raise ValueError(f"Card size must be at least {min_width}x{min_height}")
 

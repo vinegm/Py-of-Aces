@@ -181,14 +181,16 @@ class GameWindow(BaseWindow):
         showing_cards = hand.get_showing_cards()
         for card in showing_cards:
             card_art = get_card_ascii(card.rank, card.suit)
-            card_arts.append(card_art)
+            card_arts.append(self.__colorize_card(card_art, card.suit))
 
         if animation and showing_cards:
-            card_arts[-1] = animation.current_frame()
+            card_arts[-1] = self.__colorize_card(
+                animation.current_frame(), showing_cards[-1].suit
+            )
 
         if has_hidden:
             hidden_art = get_card_ascii("?", "?", face_down_text="HIDDEN")
-            card_arts.append(hidden_art)
+            card_arts.append(self.__paint_card(hidden_art, self.term.bright_black))
 
         combined_cards = join_cards(*card_arts)
         for line in combined_cards.splitlines():
@@ -209,6 +211,16 @@ class GameWindow(BaseWindow):
 
         lines.append(hand_info)
         return lines
+
+    def __colorize_card(self, card_art: str, suit: str) -> str:
+        """Paint hearts and diamonds red, leave black suits as-is."""
+        if suit not in ("h", "d"):
+            return card_art
+
+        return self.__paint_card(card_art, self.term.red)
+
+    def __paint_card(self, card_art: str, color) -> str:
+        return "\n".join(color(line) for line in card_art.splitlines())
 
     def __update_reveal_state(self, hand: Hand, key: tuple[str, int]) -> None:
         showing_cards = hand.get_showing_cards()

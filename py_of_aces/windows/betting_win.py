@@ -35,18 +35,23 @@ class BettingWindow(BaseWindow):
         lines.append("")
 
         money_info = self.game.get_money_display
-        lines.append(money_info)
+        lines.append(self.term.green(money_info))
         lines.append("")
 
         bet_display = f"Bet Amount: ${self.bet_amount}"
-        lines.append(bet_display)
+        lines.append(self.term.bold_yellow(bet_display))
         lines.append("")
 
-        lines.append("Quick bets: [1] $10  [2] $25  [3] $50  [4] $100")
+        quick_bets = "  ".join(
+            f"[{key}] ${amount}" for key, amount in self.bet_options.items()
+        )
+        lines.append(f"Quick bets: {quick_bets}")
         lines.append("")
 
         if is_practice_mode:
-            lines.append("Practice Mode: No money lost, tracking total winnings")
+            lines.append(
+                self.term.cyan("Practice Mode: No money lost, tracking total winnings")
+            )
             lines.append("")
 
         if self.message:
@@ -59,7 +64,11 @@ class BettingWindow(BaseWindow):
             lines.append(styled_message)
             lines.append("")
 
-        controls = "[q] Quit  [↑↓] Adjust bet  [1-4] Quick bets  [ENTER] Deal"
+        controls = "[q] Quit  [↑↓] Adjust bet  "
+        option_keys = list(self.bet_options)
+        if option_keys:
+            controls += f"[{option_keys[0]}-{option_keys[-1]}] Quick bets  "
+        controls += "[ENTER] Deal"
         lines.append(controls)
 
         return lines

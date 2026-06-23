@@ -82,8 +82,8 @@ class GameWindow(BaseWindow):
         lines.append(title)
         lines.append("")
 
-        money_info = self.game.get_money_display
-        money_info += f" | Total Bet: ${self.game.total_bet}"
+        money_info = self.term.green(self.game.get_money_display)
+        money_info += f" | Total Bet: {self.term.bold_yellow(f'${self.game.total_bet}')}"
         if is_practice_mode:
             money_info += f" | Shoe: {len(self.game.deck)} cards"
 
@@ -147,20 +147,21 @@ class GameWindow(BaseWindow):
 
     def __draw_hands(self) -> list[str]:
         lines: list[str] = []
-        lines.append("DEALER")
+        lines.append(self.term.bold("DEALER"))
 
         dealer_hand = self.game.dealer_hand
         lines.extend(self.__draw_cards(dealer_hand, "dealer", 0))
         lines.append("")
 
-        lines.append("PLAYER")
+        lines.append(self.term.bold("PLAYER"))
 
         has_multiple_hands = len(self.game.player_hands) > 1
+        is_player_turn = self.game.state == GameState.PLAYER_TURN
         for hand_index, hand in enumerate(self.game.player_hands):
             if has_multiple_hands:
                 hand_title = f"Hand {hand_index + 1} ({self.game.bets[hand_index]}$)"
-                if hand_index == self.game.current_hand_index:
-                    hand_title += " (ACTIVE)"
+                if hand_index == self.game.current_hand_index and is_player_turn:
+                    hand_title = self.term.cyan(f"{hand_title} (ACTIVE)")
 
                 lines.append(hand_title)
 
@@ -204,10 +205,10 @@ class GameWindow(BaseWindow):
 
         hand_info += f"Total: {hand.get_showing_value()}"
         if hand.is_blackjack:
-            hand_info += " (BLACKJACK!)"
+            hand_info += self.term.bold_yellow(" (BLACKJACK!)")
 
         elif hand.is_bust:
-            hand_info += " (BUST!)"
+            hand_info += self.term.red(" (BUST!)")
 
         lines.append(hand_info)
         return lines

@@ -27,12 +27,15 @@ class MenuWindow(BaseWindow):
 
         title_art = get_title_ascii()
         for line in title_art.splitlines():
-            lines.append(line)
+            lines.append(self.term.red(line))
+        lines.append("")
+
+        lines.append(f"♠ {self.term.red('♥')} {self.term.red('♦')} ♣")
         lines.append("")
 
         for i, item in enumerate(self.items):
             if i == self.selected_index:
-                lines.append(self.term.reverse(item))
+                lines.append(self.term.bold_reverse(item))
                 continue
             lines.append(item)
 

@@ -33,6 +33,7 @@ class BlackjackGame:
         self,
         starting_money: int = config.starting_money,
         dealer_stand_value: int = config.dealer_stand_value,
+        dealer_hits_soft_17: bool = config.dealer_hits_soft_17,
         max_splits: int = config.max_splits,
     ):
         self.starting_money = starting_money
@@ -41,6 +42,7 @@ class BlackjackGame:
         self.deck = BlackjackDeck()
         self.dealer_hand = Hand(hidden_card_default=True)
         self.dealer_stand_value = dealer_stand_value
+        self.dealer_hits_soft_17 = dealer_hits_soft_17
         self.player_hands: list[Hand] = [Hand()]
         self.current_hand_index: int = 0
         self._dealer_revealed: bool = False
@@ -287,16 +289,25 @@ class BlackjackGame:
             self._dealer_revealed = True
             return True
 
-        if (
-            self.__has_non_busted()
-            and self.dealer_hand.get_value() < self.dealer_stand_value
-        ):
+        if self.__has_non_busted() and self.__dealer_should_hit():
             self.dealer_hand.add_card(self.deck.deal(1)[0])
             return True
 
         self.__determine_winners()
         self.state = GameState.ROUND_FINISHED
         return True
+
+    def __dealer_should_hit(self) -> bool:
+        """Check if the dealer should keep hitting."""
+        dealer_value = self.dealer_hand.get_value()
+        if dealer_value < self.dealer_stand_value:
+            return True
+
+        return (
+            self.dealer_hits_soft_17
+            and dealer_value == self.dealer_stand_value
+            and self.dealer_hand.is_soft
+        )
 
     def __has_non_busted(self) -> bool:
         """Check if there is at least one non-busted player hand."""

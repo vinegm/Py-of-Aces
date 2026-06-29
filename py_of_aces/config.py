@@ -17,6 +17,7 @@ default_bet = 100
 num_decks = 1
 num_cards_reshuffle = 15
 dealer_stand_value = 17
+dealer_hits_soft_17 = true
 dealer_action_delay = 0.6
 max_splits = 3
 
@@ -56,6 +57,7 @@ class Config:
         self.num_decks: int = game.get("num_decks", 1)
         self.num_cards_reshuffle: int = game.get("num_cards_reshuffle", 15)
         self.dealer_stand_value: int = game.get("dealer_stand_value", 17)
+        self.dealer_hits_soft_17: bool = game.get("dealer_hits_soft_17", True)
         self.dealer_action_delay: float = game.get("dealer_action_delay", 0.6)
         self.max_splits: int = game.get("max_splits", 3)
 

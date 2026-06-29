@@ -24,17 +24,25 @@ class Hand:
     def can_double_down(self) -> bool:
         return len(self.cards) == 2
 
+    @property
+    def is_soft(self) -> bool:
+        """Check if an ace is currently counted as 11."""
+        _, soft_aces = self.__count_cards(self.cards)
+        return soft_aces > 0
+
     def add_card(self, card: Card) -> None:
         self.cards.append(card)
 
     def get_value(self) -> int:
-        return self.__count_cards(self.cards)
+        total, _ = self.__count_cards(self.cards)
+        return total
 
     def get_showing_value(self) -> int:
         if not self.has_hidden_card:
             return self.get_value()
 
-        return self.__count_cards(self.cards[:-1])
+        total, _ = self.__count_cards(self.cards[:-1])
+        return total
 
     def get_cards(self) -> List[Card]:
         return self.cards
@@ -45,7 +53,8 @@ class Hand:
 
         return self.cards[:-1]
 
-    def __count_cards(self, cards) -> int:
+    def __count_cards(self, cards) -> tuple[int, int]:
+        """Count the cards. Returns (total, aces still counted as 11)."""
         total = 0
         aces = 0
 
@@ -62,7 +71,7 @@ class Hand:
             total -= 10
             aces -= 1
 
-        return total
+        return total, aces
 
     def reset(self):
         self.cards = []

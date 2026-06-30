@@ -17,6 +17,8 @@
 
 A terminal-based Blackjack game written in Python using [blessed](https://pypi.org/project/blessed/).
 
+![demo](assets/preview.png)
+
 ## Features
 
 ### Game Modes
@@ -36,8 +38,41 @@ A terminal-based Blackjack game written in Python using [blessed](https://pypi.o
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.13+
 - Terminal with Unicode support
+
+## Configuration
+
+Py of Aces reads `~/.config/pyaces/config.toml`, created with defaults on first run. Everything is optional:
+
+```toml
+[keys]
+up = ["key_up", "k"]
+down = ["key_down", "j"]
+enter = ["key_enter", " "]
+quit = ["key_escape", "q"]
+
+[game]
+starting_money = 1000
+default_bet = 100
+num_decks = 1
+num_cards_reshuffle = 15
+dealer_stand_value = 17
+dealer_hits_soft_17 = true
+dealer_action_delay = 0.6
+max_splits = 3
+
+[animation]
+enabled = true
+reveal_steps = 7
+reveal_frame_duration = 0.12
+
+[bet_options]
+"1" = 10
+"2" = 25
+"3" = 50
+"4" = 100
+```
 
 ## Game Rules
 

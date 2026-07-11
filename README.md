@@ -43,7 +43,7 @@ A terminal-based Blackjack game written in Python using [blessed](https://pypi.o
 
 ## Configuration
 
-Py of Aces reads `~/.config/pyaces/config.toml`, created with defaults on first run. Everything is optional:
+Py of Aces reads `$XDG_CONFIG_HOME/pyaces/config.toml` (`~/.config/pyaces/config.toml` when `XDG_CONFIG_HOME` is unset), created with defaults on first run. Everything is optional:
 
 ```toml
 [keys]

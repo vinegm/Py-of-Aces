@@ -1,7 +1,16 @@
+import os
 import tomllib
 from pathlib import Path
 
-_CONFIG_DIR = Path.home() / ".config" / "pyaces"
+
+def _config_dir() -> Path:
+    """$XDG_CONFIG_HOME/pyaces, ~/.config/pyaces when it is unset or relative."""
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    base = Path(xdg) if os.path.isabs(xdg) else Path.home() / ".config"
+    return base / "pyaces"
+
+
+_CONFIG_DIR = _config_dir()
 _CONFIG_FILE = _CONFIG_DIR / "config.toml"
 
 _DEFAULT_CONFIG = """\
@@ -35,7 +44,7 @@ reveal_frame_duration = 0.12
 
 
 class Config:
-    """Loads ~/.config/pyaces/config.toml (creating it from defaults if missing)
+    """Loads $XDG_CONFIG_HOME/pyaces/config.toml (creating it from defaults if missing)
     and exposes its values as attributes."""
 
     def __init__(self):

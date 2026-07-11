@@ -1,6 +1,6 @@
 [project]
 name = "py-of-aces"
-version = "1.0.0"
+version = "1.0.1"
 description = "A blackjack TUI written in python"
 authors = [
     {name = "vine",email = "117782568+vinegm@users.noreply.github.com"}

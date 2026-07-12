@@ -41,6 +41,19 @@ A terminal-based Blackjack game written in Python using [blessed](https://pypi.o
 - Python 3.13+
 - Terminal with Unicode support
 
+## Usage
+
+```bash
+pyaces
+```
+
+`pyofaces` and `poa` start it too. Command line flags:
+
+- `--version`: print the version and exit
+- `--config <path>`: load the config from `<path>` instead of the default location
+- `--no-config`: ignore the config file and run with the built-in defaults
+- `--seed <seed>`: shuffle the same way every run, as the demo does
+
 ## Configuration
 
 Py of Aces reads `$XDG_CONFIG_HOME/pyaces/config.toml` (`~/.config/pyaces/config.toml` when `XDG_CONFIG_HOME` is unset), created with defaults on first run. Everything is optional:

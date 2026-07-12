@@ -2,7 +2,7 @@ from enum import Enum
 from .deck import BlackjackDeck
 from .hand import Hand
 from .game_modes import Modes, BaseGameMode, NormalMode, PracticeMode
-from ..config import config
+from ..config import Config
 
 
 class GameState(Enum):
@@ -29,20 +29,17 @@ winnings_mult_map = {
 
 
 class BlackjackGame:
-    def __init__(
-        self,
-        starting_money: int = config.starting_money,
-        dealer_stand_value: int = config.dealer_stand_value,
-        dealer_hits_soft_17: bool = config.dealer_hits_soft_17,
-        max_splits: int = config.max_splits,
-    ):
-        self.starting_money = starting_money
-        self.max_splits = max_splits
+    def __init__(self, config: Config):
+        self.starting_money = config.starting_money
+        self.max_splits = config.max_splits
 
-        self.deck = BlackjackDeck()
+        self.deck = BlackjackDeck(
+            num_decks=config.num_decks,
+            num_cards_reshuffle=config.num_cards_reshuffle,
+        )
         self.dealer_hand = Hand(hidden_card_default=True)
-        self.dealer_stand_value = dealer_stand_value
-        self.dealer_hits_soft_17 = dealer_hits_soft_17
+        self.dealer_stand_value = config.dealer_stand_value
+        self.dealer_hits_soft_17 = config.dealer_hits_soft_17
         self.player_hands: list[Hand] = [Hand()]
         self.current_hand_index: int = 0
         self._dealer_revealed: bool = False

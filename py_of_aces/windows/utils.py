@@ -1,5 +1,6 @@
 from typing import Callable
 from blessed import Terminal
+from ..config import Config
 
 
 class BaseWindow:
@@ -8,8 +9,10 @@ class BaseWindow:
         terminal_instance: Terminal,
         switch_win: Callable[[str], None],
         stop_process: Callable[[], None],
+        config: Config,
     ):
         self.term = terminal_instance
+        self.config = config
         self.switch_win = switch_win
         self.stop_process = stop_process
 

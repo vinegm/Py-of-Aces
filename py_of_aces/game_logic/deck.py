@@ -1,5 +1,4 @@
 import random
-from ..config import config
 
 
 class Card:
@@ -36,8 +35,8 @@ class BlackjackDeck:
     def __init__(
         self,
         shuffle: bool = True,
-        num_decks: int = config.num_decks,
-        num_cards_reshuffle: int = config.num_cards_reshuffle,
+        num_decks: int = 1,
+        num_cards_reshuffle: int = 15,
     ):
         self.cards = []
         self.num_decks = max(num_decks, 1)

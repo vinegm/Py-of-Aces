@@ -1,5 +1,6 @@
 import signal
 from blessed import Terminal
+from .config import Config
 from .windows.utils import BaseWindow
 
 
@@ -12,10 +13,12 @@ class TuiHandler:
         min_width: If the terminal width is less than this, shows the window "size_warning".
         windows: A dictionary of windows to add to the TUI.
         terminal_instance: An instance of blessed.Terminal to use.
+        config: The settings every window is given.
     """
 
     def __init__(
         self,
+        config: Config,
         min_height: int = 0,
         min_width: int = 0,
         windows: dict = {},
@@ -25,6 +28,7 @@ class TuiHandler:
         self.min_width = min_width
         self.windows = windows or {}
         self.term = terminal_instance
+        self.config = config
         self.running = True
 
         # Hook for easier resize
@@ -37,10 +41,11 @@ class TuiHandler:
             window_class: The class of the window to add.
             *args: Positional arguments to pass to the window class.
             **kwargs: Keyword arguments to pass to the window class.
-            ps: terminal_instance, switch_win and stop_process are
+            ps: terminal_instance, switch_win, stop_process and config are
             automatically passed, overwrite with caution.
         """
         kwargs.setdefault("terminal_instance", self.term)
+        kwargs.setdefault("config", self.config)
         kwargs.setdefault("switch_win", self.switch_win)
         kwargs.setdefault("stop_process", self.stop_process)
         self.windows[name] = window_class(*args, **kwargs)

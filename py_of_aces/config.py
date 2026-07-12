@@ -10,8 +10,9 @@ def _config_dir() -> Path:
     return base / "pyaces"
 
 
-_CONFIG_DIR = _config_dir()
-_CONFIG_FILE = _CONFIG_DIR / "config.toml"
+def default_path() -> Path:
+    """The config file read when no other is given."""
+    return _config_dir() / "config.toml"
 
 _DEFAULT_CONFIG = """\
 [keys]
@@ -44,11 +45,10 @@ reveal_frame_duration = 0.12
 
 
 class Config:
-    """Loads $XDG_CONFIG_HOME/pyaces/config.toml (creating it from defaults if missing)
-    and exposes its values as attributes."""
+    """The settings of a config file's data, each left out taking its default."""
 
-    def __init__(self):
-        data = self.__load()
+    def __init__(self, data: dict | None = None):
+        data = data or {}
         keys = data.get("keys", {})
         game = data.get("game", {})
         animation = data.get("animation", {})
@@ -76,14 +76,16 @@ class Config:
             "reveal_frame_duration", 0.12
         )
 
-    @staticmethod
-    def __load() -> dict:
-        if not _CONFIG_FILE.exists():
-            _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-            _CONFIG_FILE.write_text(_DEFAULT_CONFIG)
-
-        with _CONFIG_FILE.open("rb") as config_file:
-            return tomllib.load(config_file)
 
 
-config = Config()
+def load_config(path: Path | None = None) -> Config:
+    """Reads the config at path, or the default one, created from the defaults
+    when missing."""
+    if path is None:
+        path = default_path()
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(_DEFAULT_CONFIG)
+
+    with path.open("rb") as config_file:
+        return Config(tomllib.load(config_file))

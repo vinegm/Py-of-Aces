@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from .utils import BaseWindow
 from ..utils import get_card_ascii, join_cards
 from ..game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
-from ..config import config
 
 result_text_mapping = {
     GameResult.WIN: "YOU WIN",
@@ -124,7 +123,7 @@ class GameWindow(BaseWindow):
             self._last_state = current_state
             if current_state == GameState.DEALER_TURN:
                 self._dealer_next_action_at = (
-                    time.monotonic() + config.dealer_action_delay
+                    time.monotonic() + self.config.dealer_action_delay
                 )
             return render_needed
 
@@ -133,14 +132,14 @@ class GameWindow(BaseWindow):
 
         now = time.monotonic()
         if ("dealer", 0) in self._reveal_animations:
-            self._dealer_next_action_at = now + config.dealer_action_delay
+            self._dealer_next_action_at = now + self.config.dealer_action_delay
             return render_needed
 
         if now < self._dealer_next_action_at:
             return render_needed
 
         if self.game.advance_dealer_turn():
-            self._dealer_next_action_at = now + config.dealer_action_delay
+            self._dealer_next_action_at = now + self.config.dealer_action_delay
             return True
 
         return render_needed
@@ -228,7 +227,7 @@ class GameWindow(BaseWindow):
         showing_count = len(showing_cards)
         has_hidden = hand.has_hidden_card
 
-        if config.animations_enabled:
+        if self.config.animations_enabled:
             prev = self._hand_states.get(key)
             if prev:
                 prev_showing, prev_hidden = prev
@@ -244,7 +243,7 @@ class GameWindow(BaseWindow):
     def __start_reveal_animation(self, key: tuple[str, int], card) -> None:
         frames = self.__build_reveal_frames(card)
         self._reveal_animations[key] = _RevealAnimation(
-            frames, config.reveal_frame_duration
+            frames, self.config.reveal_frame_duration
         )
 
     def __build_reveal_frames(self, card) -> list[str]:
@@ -257,7 +256,7 @@ class GameWindow(BaseWindow):
 
         origin_x, origin_y = self._REVEAL_ORIGIN_X, self._REVEAL_ORIGIN_Y
         x_scale, y_scale = self._REVEAL_X_SCALE, self._REVEAL_Y_SCALE
-        steps = max(config.reveal_steps, 1)
+        steps = max(self.config.reveal_steps, 1)
 
         max_dist = (
             math.hypot(
@@ -399,7 +398,7 @@ class GameWindow(BaseWindow):
         self.message = ""
         key = key.lower()
 
-        if key in config.quit_keys:
+        if key in self.config.quit_keys:
             self.switch_win(self.menu_window)
             return
 
@@ -416,7 +415,7 @@ class GameWindow(BaseWindow):
             self.switch_win(self.betting_window)
             return
 
-        if key not in config.enter_keys:
+        if key not in self.config.enter_keys:
             return
 
         self.game.finish_round()

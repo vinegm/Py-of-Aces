@@ -87,6 +87,10 @@ reveal_frame_duration = 0.12
 "4" = 100
 ```
 
+## Development
+
+Needs [uv](https://docs.astral.sh/uv/). `make install` sets up the environment, `make run` starts the game, and `make ci` runs what CI runs: `ruff format --check`, `ruff check` and `pyright`. `make fmt` formats the code.
+
 ## Game Rules
 
 ### Blackjack Basics

@@ -22,3 +22,42 @@ pyofaces = "py_of_aces:console_entry_point"
 pyaces = "py_of_aces:console_entry_point"
 poa = "py_of_aces:console_entry_point"
 
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.400",
+    "ruff>=0.11.13",
+]
+
+[tool.pyright]
+include = ["py_of_aces"]
+exclude = ["**/__pycache__"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+
+[tool.ruff]
+lint.extend-select = [
+    "I",
+    "S",
+    "B",
+    "A",
+    "COM",
+    "T20",
+    "Q",
+    "SLF",
+    "TID",
+    "TC",
+    "PTH",
+    "FLY",
+]
+lint.ignore = [
+    "ARG001",
+    "B904",
+    "E722",
+]
+
+[tool.ruff.lint.isort]
+no-sections = true
+force-sort-within-sections = true

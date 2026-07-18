@@ -1,18 +1,19 @@
 import os
-import tomllib
 from pathlib import Path
+import tomllib
 
 
 def _config_dir() -> Path:
     """$XDG_CONFIG_HOME/pyaces, ~/.config/pyaces when it is unset or relative."""
-    xdg = os.environ.get("XDG_CONFIG_HOME", "")
-    base = Path(xdg) if os.path.isabs(xdg) else Path.home() / ".config"
+    xdg = Path(os.environ.get("XDG_CONFIG_HOME", ""))
+    base = xdg if xdg.is_absolute() else Path.home() / ".config"
     return base / "pyaces"
 
 
 def default_path() -> Path:
     """The config file read when no other is given."""
     return _config_dir() / "config.toml"
+
 
 _DEFAULT_CONFIG = """\
 [keys]
@@ -61,7 +62,8 @@ class Config:
         self.starting_money: int = game.get("starting_money", 1_000)
         self.default_bet: int = game.get("default_bet", 100)
         self.bet_options: dict[str, int] = data.get(
-            "bet_options", {"1": 10, "2": 25, "3": 50, "4": 100}
+            "bet_options",
+            {"1": 10, "2": 25, "3": 50, "4": 100},
         )
         self.num_decks: int = game.get("num_decks", 1)
         self.num_cards_reshuffle: int = game.get("num_cards_reshuffle", 15)
@@ -73,9 +75,9 @@ class Config:
         self.animations_enabled: bool = animation.get("enabled", True)
         self.reveal_steps: int = animation.get("reveal_steps", 7)
         self.reveal_frame_duration: float = animation.get(
-            "reveal_frame_duration", 0.12
+            "reveal_frame_duration",
+            0.12,
         )
-
 
 
 def load_config(path: Path | None = None) -> Config:

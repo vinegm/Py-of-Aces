@@ -1,12 +1,16 @@
 from .utils import BaseWindow
-from ..game_logic import BlackjackGame, GameState, Modes
+from py_of_aces.game_logic import BlackjackGame, GameState, Modes
 
 
 class BettingWindow(BaseWindow):
     message = ""
 
     def __init__(
-        self, game: BlackjackGame, menu_window: str, game_window: str, **kwargs
+        self,
+        game: BlackjackGame,
+        menu_window: str,
+        game_window: str,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.bet_amount = self.config.default_bet
@@ -28,7 +32,7 @@ class BettingWindow(BaseWindow):
             mode_text = " (PRACTICE)"
 
         title = self.term.bold(
-            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}"
+            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}",
         )
         lines.append(title)
         lines.append("")
@@ -49,7 +53,7 @@ class BettingWindow(BaseWindow):
 
         if is_practice_mode:
             lines.append(
-                self.term.cyan("Practice Mode: No money lost, tracking total winnings")
+                self.term.cyan("Practice Mode: No money lost, tracking total winnings"),
             )
             lines.append("")
 

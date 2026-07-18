@@ -1,10 +1,9 @@
-import time
-import math
-from dataclasses import dataclass
-
 from .utils import BaseWindow
-from ..utils import get_card_ascii, join_cards
-from ..game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
+from dataclasses import dataclass
+import math
+from py_of_aces.game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
+from py_of_aces.utils import get_card_ascii, join_cards
+import time
 
 result_text_mapping = {
     GameResult.WIN: "YOU WIN",
@@ -55,7 +54,11 @@ class GameWindow(BaseWindow):
     _REVEAL_Y_SCALE = 1.0
 
     def __init__(
-        self, game: BlackjackGame, menu_window: str, betting_window: str, **kwargs
+        self,
+        game: BlackjackGame,
+        menu_window: str,
+        betting_window: str,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.game = game
@@ -76,13 +79,15 @@ class GameWindow(BaseWindow):
             mode_text = " (PRACTICE)"
 
         title = self.term.bold(
-            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}"
+            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}",
         )
         lines.append(title)
         lines.append("")
 
         money_info = self.term.green(self.game.get_money_display)
-        money_info += f" | Total Bet: {self.term.bold_yellow(f'${self.game.total_bet}')}"
+        money_info += (
+            f" | Total Bet: {self.term.bold_yellow(f'${self.game.total_bet}')}"
+        )
         if is_practice_mode:
             money_info += f" | Shoe: {len(self.game.deck)} cards"
 
@@ -107,7 +112,7 @@ class GameWindow(BaseWindow):
 
         if self.game.will_reshuffle:
             styled_message = self.term.yellow(
-                "After this round, the deck will be reshuffled."
+                "After this round, the deck will be reshuffled.",
             )
             lines.append(styled_message)
             lines.append("")
@@ -185,7 +190,8 @@ class GameWindow(BaseWindow):
 
         if animation and showing_cards:
             card_arts[-1] = self.__colorize_card(
-                animation.current_frame(), showing_cards[-1].suit
+                animation.current_frame(),
+                showing_cards[-1].suit,
             )
 
         if has_hidden:
@@ -243,7 +249,8 @@ class GameWindow(BaseWindow):
     def __start_reveal_animation(self, key: tuple[str, int], card) -> None:
         frames = self.__build_reveal_frames(card)
         self._reveal_animations[key] = _RevealAnimation(
-            frames, self.config.reveal_frame_duration
+            frames,
+            self.config.reveal_frame_duration,
         )
 
     def __build_reveal_frames(self, card) -> list[str]:
@@ -278,7 +285,7 @@ class GameWindow(BaseWindow):
                     origin_y,
                     x_scale,
                     y_scale,
-                )
+                ),
             )
 
         return frames
@@ -297,7 +304,9 @@ class GameWindow(BaseWindow):
         ring_char = self._REVEAL_RING_CHAR
 
         blended_lines: list[str] = []
-        for row_index, (back_line, face_line) in enumerate(zip(back_lines, face_lines)):
+        for row_index, (back_line, face_line) in enumerate(
+            zip(back_lines, face_lines, strict=True),
+        ):
             blended = []
             for col_index, back_char in enumerate(back_line):
                 dist = math.hypot(

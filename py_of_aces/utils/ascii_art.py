@@ -47,7 +47,7 @@ def get_card_ascii(
             lines.append(f"|{padding}{rank_right}|")
             continue
 
-        lines.append(f"|{" " * inner_width}|")
+        lines.append(f"|{' ' * inner_width}|")
 
     lines.append("+" + "-" * inner_width + "+")
     return "\n".join(lines)
@@ -59,7 +59,7 @@ def join_cards(*cards: str) -> str:
     Returns a string with the cards side by side.
     """
     card_lines = [card.splitlines() for card in cards]
-    combined_lines = ["  ".join(lines) for lines in zip(*card_lines)]
+    combined_lines = ["  ".join(lines) for lines in zip(*card_lines, strict=True)]
 
     return "\n".join(combined_lines)
 

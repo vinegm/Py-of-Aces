@@ -1,8 +1,8 @@
-from enum import Enum
 from .deck import BlackjackDeck
+from .game_modes import BaseGameMode, Modes, NormalMode, PracticeMode
 from .hand import Hand
-from .game_modes import Modes, BaseGameMode, NormalMode, PracticeMode
-from ..config import Config
+from enum import Enum
+from py_of_aces.config import Config
 
 
 class GameState(Enum):

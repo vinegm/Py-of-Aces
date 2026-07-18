@@ -1,6 +1,6 @@
-from typing import Callable
 from blessed import Terminal
-from ..config import Config
+from py_of_aces.config import Config
+from typing import Callable
 
 
 class BaseWindow:

@@ -1,5 +1,5 @@
-from typing import List
 from .deck import Card
+from typing import List
 
 
 class Hand:

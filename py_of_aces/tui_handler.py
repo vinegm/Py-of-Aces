@@ -1,7 +1,7 @@
-import signal
-from blessed import Terminal
 from .config import Config
 from .windows.utils import BaseWindow
+from blessed import Terminal
+import signal
 
 
 class TuiHandler:
@@ -21,13 +21,13 @@ class TuiHandler:
         config: Config,
         min_height: int = 0,
         min_width: int = 0,
-        windows: dict = {},
-        terminal_instance: Terminal = Terminal(),
+        windows: dict | None = None,
+        terminal_instance: Terminal | None = None,
     ):
         self.min_height = min_height
         self.min_width = min_width
         self.windows = windows or {}
-        self.term = terminal_instance
+        self.term = terminal_instance or Terminal()
         self.config = config
         self.running = True
 

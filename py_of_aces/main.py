@@ -1,3 +1,7 @@
+from .config import Config, load_config
+from .game_logic.blackjack_game import BlackjackGame
+from .tui_handler import TuiHandler
+from .windows import BettingWindow, GameWindow, MenuWindow, SizeWarningWindow
 import argparse
 from importlib.metadata import version
 from pathlib import Path
@@ -5,18 +9,16 @@ import random
 import sys
 import tomllib
 
-from .config import Config, load_config
-from .tui_handler import TuiHandler
-from .windows import MenuWindow, GameWindow, BettingWindow, SizeWarningWindow
-from .game_logic.blackjack_game import BlackjackGame
-
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="pyaces", description="A blackjack TUI written in Python"
+        prog="pyaces",
+        description="A blackjack TUI written in Python",
     )
     parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {version('py-of-aces')}"
+        "--version",
+        action="version",
+        version=f"%(prog)s {version('py-of-aces')}",
     )
 
     source = parser.add_mutually_exclusive_group()
@@ -81,7 +83,10 @@ def run(argv: list[str] | None = None):
         game=game_instance,
     )
     tui.add_window(
-        "size_warning", SizeWarningWindow, min_width=MIN_WIDTH, min_height=MIN_HEIGHT
+        "size_warning",
+        SizeWarningWindow,
+        min_width=MIN_WIDTH,
+        min_height=MIN_HEIGHT,
     )
 
     tui.start("menu")

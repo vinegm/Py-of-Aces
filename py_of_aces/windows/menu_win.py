@@ -1,6 +1,6 @@
 from .utils import BaseWindow
-from ..utils import get_title_ascii
-from ..game_logic import BlackjackGame, Modes
+from py_of_aces.game_logic import BlackjackGame, Modes
+from py_of_aces.utils import get_title_ascii
 
 
 class MenuWindow(BaseWindow):

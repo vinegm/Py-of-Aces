@@ -13,7 +13,9 @@ class SizeWarningWindow(BaseWindow):
         lines.append(self.term.bold_red_reverse("TERMINAL SIZE WARNING"))
         lines.append("Your terminal is too small to display Py of Aces properly.")
         lines.append("")
-        lines.append(f"Current size: {self.term.red(f'{self.term.width}x{self.term.height}')}")
+        lines.append(
+            f"Current size: {self.term.red(f'{self.term.width}x{self.term.height}')}",
+        )
         lines.append(f"Required size: {self.min_width}x{self.min_height} (minimum)")
         lines.append("")
         lines.append("Please resize your terminal or use a smaller font.")

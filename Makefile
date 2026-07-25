@@ -24,3 +24,15 @@ typecheck:
 
 .PHONY: ci
 ci: fmt-check lint typecheck
+
+.PHONY: have-vhs
+have-vhs:
+	@if ! command -v vhs >/dev/null 2>&1; then \
+		echo "error: vhs is not installed"; \
+		echo "install: https://github.com/charmbracelet/vhs"; \
+		exit 1; \
+	fi
+
+.PHONY: demo
+demo: have-vhs
+	vhs vhs/demo.tape

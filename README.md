@@ -17,7 +17,7 @@
 
 A terminal-based Blackjack game written in Python using [blessed](https://pypi.org/project/blessed/).
 
-![demo](assets/preview.png)
+![demo](assets/demo.gif)
 
 ## Features
 
@@ -89,7 +89,7 @@ reveal_frame_duration = 0.12
 
 ## Development
 
-Needs [uv](https://docs.astral.sh/uv/). `make install` sets up the environment, `make run` starts the game, and `make ci` runs what CI runs: `ruff format --check`, `ruff check` and `pyright`. `make fmt` formats the code.
+Needs [uv](https://docs.astral.sh/uv/). `make install` sets up the environment, `make run` starts the game, and `make ci` runs what CI runs: `ruff format --check`, `ruff check` and `pyright`. `make fmt` formats the code. `make demo` records `assets/demo.gif` from `vhs/demo.tape` with [VHS](https://github.com/charmbracelet/vhs), on a seeded deal so it plays the same every time.
 
 ## Game Rules
 

@@ -41,6 +41,30 @@ A terminal-based Blackjack game written in Python using [blessed](https://pypi.o
 - Python 3.13+
 - Terminal with Unicode support
 
+### From PyPI
+
+```bash
+uv tool install py-of-aces
+# or
+pipx install py-of-aces
+```
+
+### Arch Linux
+
+The `PKGBUILD` in this repo builds the latest release:
+
+```bash
+makepkg -si
+```
+
+### From source
+
+```bash
+git clone https://github.com/vinegm/Py-of-Aces.git
+cd Py-of-Aces
+uv tool install .
+```
+
 ## Usage
 
 ```bash

@@ -30,7 +30,6 @@ winnings_mult_map = {
 
 class BlackjackGame:
     def __init__(self, config: Config):
-        self.starting_money = config.starting_money
         self.max_splits = config.max_splits
 
         self.deck = BlackjackDeck(
@@ -46,6 +45,10 @@ class BlackjackGame:
 
         self.bets: list[int] = [0]
         self.current_mode: BaseGameMode = BaseGameMode()
+        self.__modes: dict[Modes, BaseGameMode] = {
+            Modes.NORMAL: NormalMode(config.starting_money),
+            Modes.PRACTICE: PracticeMode(),
+        }
 
         self.state: GameState = GameState.BETTING
         self.results: list[GameResult | None] = [None]
@@ -116,17 +119,19 @@ class BlackjackGame:
         return self.deck.needs_reshuffle
 
     def select_mode(self, selected_mode: Modes) -> None:
-        """Select the game mode."""
+        """Select the game mode, each keeping its money. A finished round left
+        behind is paid first, one still being played is forfeited."""
         if selected_mode == self.mode:
             return
 
-        match selected_mode:
-            case Modes.NORMAL:
-                self.current_mode = NormalMode(self.starting_money)
-                self.__reset_game()
-            case Modes.PRACTICE:
-                self.current_mode = PracticeMode()
-                self.__reset_game()
+        if self.state == GameState.ROUND_FINISHED:
+            self.finish_round()
+
+        self.current_mode = self.__modes[selected_mode]
+        if self.is_game_over:
+            self.reset_money()
+
+        self.__reset_game()
 
     def finish_round(self) -> None:
         """Finish the round."""

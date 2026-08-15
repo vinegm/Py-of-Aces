@@ -39,6 +39,7 @@ class BlackjackDeck:
         num_cards_reshuffle: int = 15,
     ):
         self.cards = []
+        self.on_table: list[Card] = []
         self.num_decks = max(num_decks, 1)
         self.num_cards_reshuffle = num_cards_reshuffle
 
@@ -57,23 +58,43 @@ class BlackjackDeck:
 
     def deal(self, n: int = 1) -> list[Card]:
         """
-        Deal n cards from the deck, resetting the shoe if it runs out.
-
-        Returns:
-            List of Card objects.
+        Deal n cards from the deck, reshuffling the
+        cards not on the table if it runs out.
         """
         if n > len(self.cards):
-            self.reset_deck()
+            self.__reshuffle_around_table()
 
         if n > len(self.cards):
             raise ValueError("Too many cards requested to deal.")
 
         dealt, self.cards = self.cards[:n], self.cards[n:]
+        self.on_table.extend(dealt)
         return dealt
+
+    def clear_table(self) -> None:
+        """Forget the cards dealt, as a round ended."""
+        self.on_table = []
+
+    def __reshuffle_around_table(self) -> None:
+        """Rebuild the shoe without the cards still on the table."""
+        self.cards = []
+        self.__build_deck()
+        for card in self.on_table:
+            self.__remove_from_shoe(card)
+
+        self.shuffle()
+
+    def __remove_from_shoe(self, card: Card) -> None:
+        """Take one copy of the card out of the shoe."""
+        for shoe_card in self.cards:
+            if (shoe_card.rank, shoe_card.suit) == (card.rank, card.suit):
+                self.cards.remove(shoe_card)
+                return
 
     def reset_deck(self, shuffle: bool = True) -> None:
         """Reset to a full deck again."""
         self.cards = []
+        self.on_table = []
         self.__build_deck()
         if shuffle:
             self.shuffle()

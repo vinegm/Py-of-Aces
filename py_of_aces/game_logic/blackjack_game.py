@@ -149,6 +149,7 @@ class BlackjackGame:
 
     def __reset_game(self):
         """Reset the game to initial state."""
+        self.deck.clear_table()
         self.dealer_hand.reset()
         self.player_hands = [Hand()]
         self.current_hand_index = 0

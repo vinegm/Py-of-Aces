@@ -57,7 +57,7 @@ def config_of(args: argparse.Namespace) -> Config:
 def run(argv: list[str] | None = None):
     """Start Py of Aces"""
     MIN_HEIGHT = 30
-    MIN_WIDTH = 25
+    MIN_WIDTH = 60
 
     args = parse_args(argv)
     config = config_of(args)

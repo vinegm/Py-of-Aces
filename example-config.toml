@@ -1,0 +1,33 @@
+# These are all the settings you can configure in a config file.
+# All values here are the defaults; omit any of them and the default is used instead.
+# This file must match the defaults in py_of_aces/config.py.
+
+[keys]
+# Each is a list of keys, named as blessed names them: "key_up", "key_enter",
+# "key_escape", or the character itself. Case doesn't matter.
+up = ["key_up", "k"]
+down = ["key_down", "j"]
+enter = ["key_enter", " "]
+quit = ["key_escape", "q"]
+
+[game]
+starting_money = 1000 # at least 1
+default_bet = 100 # at least 1, the bet the betting screen opens on
+num_decks = 1 # at least 1, decks in the shoe
+num_cards_reshuffle = 15 # at least 0, reshuffle between rounds below this many cards
+dealer_stand_value = 17 # 2 to 21, the dealer hits below this
+dealer_hits_soft_17 = true # the dealer also hits a soft dealer_stand_value
+dealer_action_delay = 0.6 # at least 0, seconds between the dealer's actions
+max_splits = 3 # at least 0, splits per round
+
+[animation]
+enabled = true # the card reveal animation
+reveal_steps = 7 # at least 1, frames of a reveal
+reveal_frame_duration = 0.12 # at least 0, seconds per frame
+
+[bet_options]
+# The betting screen's quick bets: one key each, then a bet of at least 1.
+"1" = 10
+"2" = 25
+"3" = 50
+"4" = 100

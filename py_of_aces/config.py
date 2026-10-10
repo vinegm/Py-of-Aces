@@ -15,36 +15,6 @@ def default_path() -> Path:
     return _config_dir() / "config.toml"
 
 
-_DEFAULT_CONFIG = """\
-[keys]
-up = ["key_up", "k"]
-down = ["key_down", "j"]
-enter = ["key_enter", " "]
-quit = ["key_escape", "q"]
-
-[game]
-starting_money = 1000
-default_bet = 100
-num_decks = 1
-num_cards_reshuffle = 15
-dealer_stand_value = 17
-dealer_hits_soft_17 = true
-dealer_action_delay = 0.6
-max_splits = 3
-
-[animation]
-enabled = true
-reveal_steps = 7
-reveal_frame_duration = 0.12
-
-[bet_options]
-"1" = 10
-"2" = 25
-"3" = 50
-"4" = 100
-"""
-
-
 class Config:
     """The settings of a config file's data, each left out taking its default."""
 
@@ -81,13 +51,11 @@ class Config:
 
 
 def load_config(path: Path | None = None) -> Config:
-    """Reads the config at path, or the default one, created from the defaults
-    when missing."""
+    """Reads the config at path, or the default one, which may not exist."""
     if path is None:
         path = default_path()
         if not path.exists():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(_DEFAULT_CONFIG)
+            return Config()
 
     with path.open("rb") as config_file:
         return Config(tomllib.load(config_file))

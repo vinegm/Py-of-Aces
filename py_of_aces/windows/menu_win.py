@@ -43,16 +43,16 @@ class MenuWindow(BaseWindow):
     def handle_input(self, key: str) -> None:
         key = key.lower()
 
-        if key in self.config.up_keys:
+        if key in self.config.keys.up:
             self.selected_index = (self.selected_index - 1) % self.item_count
 
-        elif key in self.config.down_keys:
+        elif key in self.config.keys.down:
             self.selected_index = (self.selected_index + 1) % self.item_count
 
-        elif key in self.config.enter_keys:
+        elif key in self.config.keys.enter:
             self.__handle_selection()
 
-        elif key in self.config.quit_keys:
+        elif key in self.config.keys.quit:
             self.stop_process()
 
     def __handle_selection(self) -> None:

@@ -1,6 +1,8 @@
+from dataclasses import dataclass, field, fields
 import os
 from pathlib import Path
 import tomllib
+from typing import Any
 
 
 def _config_dir() -> Path:
@@ -15,47 +17,77 @@ def default_path() -> Path:
     return _config_dir() / "config.toml"
 
 
+def _default_bet_options() -> dict[str, int]:
+    return {
+        "1": 10,
+        "2": 25,
+        "3": 50,
+        "4": 100,
+    }
+
+
+@dataclass(frozen=True)
+class Keys:
+    up: tuple[str, ...] = ("key_up", "k")
+    down: tuple[str, ...] = ("key_down", "j")
+    enter: tuple[str, ...] = ("key_enter", " ")
+    quit: tuple[str, ...] = ("key_escape", "q")
+
+
+@dataclass(frozen=True)
+class Game:
+    starting_money: int = 1_000
+    default_bet: int = 100
+    num_decks: int = 1
+    num_cards_reshuffle: int = 15
+    dealer_stand_value: int = 17
+    dealer_hits_soft_17: bool = True
+    dealer_action_delay: float = 0.6
+    max_splits: int = 3
+
+
+@dataclass(frozen=True)
+class Animation:
+    enabled: bool = True
+    reveal_steps: int = 7
+    reveal_frame_duration: float = 0.12
+
+
+@dataclass(frozen=True)
 class Config:
-    """The settings of a config file's data, each left out taking its default."""
+    """The settings of a config file, each left out taking its default."""
 
-    def __init__(self, data: dict | None = None):
-        data = data or {}
-        keys = data.get("keys", {})
-        game = data.get("game", {})
-        animation = data.get("animation", {})
+    keys: Keys = Keys()
+    game: Game = Game()
+    animation: Animation = Animation()
+    bet_options: dict[str, int] = field(default_factory=_default_bet_options)
 
-        self.up_keys: list[str] = keys.get("up", ["key_up", "k"])
-        self.down_keys: list[str] = keys.get("down", ["key_down", "j"])
-        self.enter_keys: list[str] = keys.get("enter", ["key_enter", " "])
-        self.quit_keys: list[str] = keys.get("quit", ["key_escape", "q"])
 
-        self.starting_money: int = game.get("starting_money", 1_000)
-        self.default_bet: int = game.get("default_bet", 100)
-        self.bet_options: dict[str, int] = data.get(
-            "bet_options",
-            {"1": 10, "2": 25, "3": 50, "4": 100},
-        )
-        self.num_decks: int = game.get("num_decks", 1)
-        self.num_cards_reshuffle: int = game.get("num_cards_reshuffle", 15)
-        self.dealer_stand_value: int = game.get("dealer_stand_value", 17)
-        self.dealer_hits_soft_17: bool = game.get("dealer_hits_soft_17", True)
-        self.dealer_action_delay: float = game.get("dealer_action_delay", 0.6)
-        self.max_splits: int = game.get("max_splits", 3)
+def _read_section(section: Any, data: dict) -> Any:
+    """The section with the values data has for it."""
+    values = {}
+    for setting in fields(section):
+        if setting.name in data:
+            values[setting.name] = data[setting.name]
 
-        self.animations_enabled: bool = animation.get("enabled", True)
-        self.reveal_steps: int = animation.get("reveal_steps", 7)
-        self.reveal_frame_duration: float = animation.get(
-            "reveal_frame_duration",
-            0.12,
-        )
+    return section(**values)
+
+
+def _config_from(data: dict) -> Config:
+    return Config(
+        keys=_read_section(Keys, data.get("keys", {})),
+        game=_read_section(Game, data.get("game", {})),
+        animation=_read_section(Animation, data.get("animation", {})),
+        bet_options=data.get("bet_options", _default_bet_options()),
+    )
 
 
 def load_config(path: Path | None = None) -> Config:
-    """Reads the config at path, or the default one, which may not exist."""
+    """Reads the config at path, or the default one."""
     if path is None:
         path = default_path()
         if not path.exists():
             return Config()
 
     with path.open("rb") as config_file:
-        return Config(tomllib.load(config_file))
+        return _config_from(tomllib.load(config_file))

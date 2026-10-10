@@ -13,7 +13,7 @@ class BettingWindow(BaseWindow):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.bet_amount = self.config.default_bet
+        self.bet_amount = self.config.game.default_bet
         self.bet_options = self.config.bet_options
         self.game = game
         self.menu_window = menu_window
@@ -84,10 +84,10 @@ class BettingWindow(BaseWindow):
         key = key.lower()
         available_money = self.game.available_money
 
-        if key in self.config.quit_keys:
+        if key in self.config.keys.quit:
             self.switch_win(self.menu_window)
 
-        elif key in self.config.enter_keys:
+        elif key in self.config.keys.enter:
             if not self.game.place_bet(self.bet_amount):
                 self.message = "Invalid bet amount!"
                 return
@@ -95,10 +95,10 @@ class BettingWindow(BaseWindow):
             self.game.deal_initial_cards()
             self.switch_win(self.game_window)
 
-        elif key in self.config.up_keys:
+        elif key in self.config.keys.up:
             self.bet_amount = int(min(self.bet_amount + 5, available_money))
 
-        elif key in self.config.down_keys:
+        elif key in self.config.keys.down:
             self.bet_amount = max(self.bet_amount - 5, 5)
 
         elif key in self.bet_options:

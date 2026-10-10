@@ -128,7 +128,7 @@ class GameWindow(BaseWindow):
             self._last_state = current_state
             if current_state == GameState.DEALER_TURN:
                 self._dealer_next_action_at = (
-                    time.monotonic() + self.config.dealer_action_delay
+                    time.monotonic() + self.config.game.dealer_action_delay
                 )
             return render_needed
 
@@ -137,14 +137,14 @@ class GameWindow(BaseWindow):
 
         now = time.monotonic()
         if ("dealer", 0) in self._reveal_animations:
-            self._dealer_next_action_at = now + self.config.dealer_action_delay
+            self._dealer_next_action_at = now + self.config.game.dealer_action_delay
             return render_needed
 
         if now < self._dealer_next_action_at:
             return render_needed
 
         if self.game.advance_dealer_turn():
-            self._dealer_next_action_at = now + self.config.dealer_action_delay
+            self._dealer_next_action_at = now + self.config.game.dealer_action_delay
             return True
 
         return render_needed
@@ -233,7 +233,7 @@ class GameWindow(BaseWindow):
         showing_count = len(showing_cards)
         has_hidden = hand.has_hidden_card
 
-        if self.config.animations_enabled:
+        if self.config.animation.enabled:
             prev = self._hand_states.get(key)
             if prev:
                 prev_showing, prev_hidden = prev
@@ -250,7 +250,7 @@ class GameWindow(BaseWindow):
         frames = self.__build_reveal_frames(card)
         self._reveal_animations[key] = _RevealAnimation(
             frames,
-            self.config.reveal_frame_duration,
+            self.config.animation.reveal_frame_duration,
         )
 
     def __build_reveal_frames(self, card) -> list[str]:
@@ -263,7 +263,7 @@ class GameWindow(BaseWindow):
 
         origin_x, origin_y = self._REVEAL_ORIGIN_X, self._REVEAL_ORIGIN_Y
         x_scale, y_scale = self._REVEAL_X_SCALE, self._REVEAL_Y_SCALE
-        steps = max(self.config.reveal_steps, 1)
+        steps = max(self.config.animation.reveal_steps, 1)
 
         max_dist = (
             math.hypot(
@@ -407,7 +407,7 @@ class GameWindow(BaseWindow):
         self.message = ""
         key = key.lower()
 
-        if key in self.config.quit_keys:
+        if key in self.config.keys.quit:
             self.switch_win(self.menu_window)
             return
 
@@ -424,7 +424,7 @@ class GameWindow(BaseWindow):
             self.switch_win(self.betting_window)
             return
 
-        if key not in self.config.enter_keys:
+        if key not in self.config.keys.enter:
             return
 
         self.game.finish_round()

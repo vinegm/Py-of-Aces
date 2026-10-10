@@ -30,15 +30,15 @@ winnings_mult_map = {
 
 class BlackjackGame:
     def __init__(self, config: Config):
-        self.max_splits = config.max_splits
+        self.max_splits = config.game.max_splits
 
         self.deck = BlackjackDeck(
-            num_decks=config.num_decks,
-            num_cards_reshuffle=config.num_cards_reshuffle,
+            num_decks=config.game.num_decks,
+            num_cards_reshuffle=config.game.num_cards_reshuffle,
         )
         self.dealer_hand = Hand(hidden_card_default=True)
-        self.dealer_stand_value = config.dealer_stand_value
-        self.dealer_hits_soft_17 = config.dealer_hits_soft_17
+        self.dealer_stand_value = config.game.dealer_stand_value
+        self.dealer_hits_soft_17 = config.game.dealer_hits_soft_17
         self.player_hands: list[Hand] = [Hand()]
         self.current_hand_index: int = 0
         self._dealer_revealed: bool = False
@@ -46,7 +46,7 @@ class BlackjackGame:
         self.bets: list[int] = [0]
         self.current_mode: BaseGameMode = BaseGameMode()
         self.__modes: dict[Modes, BaseGameMode] = {
-            Modes.NORMAL: NormalMode(config.starting_money),
+            Modes.NORMAL: NormalMode(config.game.starting_money),
             Modes.PRACTICE: PracticeMode(),
         }
 

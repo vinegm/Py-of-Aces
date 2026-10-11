@@ -1,9 +1,9 @@
 # Maintainer: vinegm <info AT vinegm D0T com>
 pkgname='py-of-aces'
 pkgver=1.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A blackjack TUI written in Python"
-arch=('x86_64')
+arch=('any')
 url="https://github.com/vinegm/Py-of-Aces"
 license=('MIT')
 depends=('python' 'python-blessed')

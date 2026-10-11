@@ -65,6 +65,14 @@ class Config:
     warnings: list[str] = field(default_factory=list)
 
 
+_SECTIONS = {
+    "keys",
+    "game",
+    "animation",
+    "bet_options",
+}
+
+
 def _keys_problem(value: Any) -> str | None:
     if not isinstance(value, list) or not value:
         return "must be a list of keys"
@@ -117,14 +125,27 @@ def _usable(value: Any) -> Any:
     return tuple(keys)
 
 
+def _warn_unknown(
+    data: dict,
+    known: set[str],
+    prefix: str,
+    warnings: list[str],
+) -> None:
+    for key in data:
+        if key not in known:
+            warnings.append(f"{prefix}{key}: unknown setting, ignored")
+
+
 def _read_section(section: Any, name: str, data: Any, warnings: list[str]) -> Any:
     """The section with the values data has for it, warning of those invalid."""
     if not isinstance(data, dict):
         warnings.append(f"{name}: must be a table, using its defaults")
         return section()
 
+    known = set()
     values = {}
     for setting in fields(section):
+        known.add(setting.name)
         if setting.name not in data:
             continue
 
@@ -135,6 +156,8 @@ def _read_section(section: Any, name: str, data: Any, warnings: list[str]) -> An
             continue
 
         values[setting.name] = _usable(value)
+
+    _warn_unknown(data, known, f"{name}.", warnings)
 
     return section(**values)
 
@@ -169,6 +192,8 @@ def _read_bet_options(data: Any, warnings: list[str]) -> dict[str, int]:
 
 def _config_from(data: dict) -> Config:
     warnings: list[str] = []
+    _warn_unknown(data, _SECTIONS, "", warnings)
+
     return Config(
         keys=_read_section(Keys, "keys", data.get("keys", {}), warnings),
         game=_read_section(Game, "game", data.get("game", {}), warnings),

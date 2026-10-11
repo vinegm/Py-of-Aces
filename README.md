@@ -80,7 +80,7 @@ pyaces
 
 ## Configuration
 
-Py of Aces reads `$XDG_CONFIG_HOME/pyaces/config.toml` (`~/.config/pyaces/config.toml` when `XDG_CONFIG_HOME` is unset). The file is optional: anything it leaves out keeps its built-in default (see `py_of_aces/config.py`), a file that can't be read or parsed falls back to the defaults entirely, and an invalid setting falls back to its own default. Problems are printed as warnings when the game exits. An example config with every setting is provided at `example-config.toml`.
+Py of Aces reads `$XDG_CONFIG_HOME/pyaces/config.toml` (`~/.config/pyaces/config.toml` when `XDG_CONFIG_HOME` is unset). The file is optional: anything it leaves out keeps its built-in default (see `py_of_aces/config.py`), a file that can't be read or parsed falls back to the defaults entirely, an invalid setting falls back to its own default, and an unknown one is ignored. Problems are printed as warnings when the game exits. An example config with every setting is provided at `example-config.toml`.
 
 ## Development
 

@@ -7,7 +7,6 @@ from importlib.metadata import version
 from pathlib import Path
 import random
 import sys
-import tomllib
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -44,14 +43,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def config_of(args: argparse.Namespace) -> Config:
-    """The config the flags ask for, exiting with the reason it can not be read."""
+    """The config the flags ask for."""
     if args.no_config:
         return Config()
 
-    try:
-        return load_config(args.config)
-    except (OSError, tomllib.TOMLDecodeError) as err:
-        sys.exit(f"pyaces: could not read the config: {err}")
+    return load_config(args.config)
 
 
 def run(argv: list[str] | None = None):
@@ -89,4 +85,9 @@ def run(argv: list[str] | None = None):
         min_height=MIN_HEIGHT,
     )
 
-    tui.start("menu")
+    # The game draws over the whole screen, so they are only seen once it is done.
+    try:
+        tui.start("menu")
+    finally:
+        for warning in config.warnings:
+            sys.stderr.write(f"warning: {warning}\n")

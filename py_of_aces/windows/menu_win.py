@@ -44,10 +44,10 @@ class MenuWindow(BaseWindow):
         key = key.lower()
 
         if key in self.config.keys.up:
-            self.selected_index = (self.selected_index - 1) % self.item_count
+            self.selected_index = max(self.selected_index - 1, 0)
 
         elif key in self.config.keys.down:
-            self.selected_index = (self.selected_index + 1) % self.item_count
+            self.selected_index = min(self.selected_index + 1, self.item_count - 1)
 
         elif key in self.config.keys.enter:
             self.__handle_selection()

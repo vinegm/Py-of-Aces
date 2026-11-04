@@ -107,7 +107,7 @@ class TuiHandler:
         args:
             start_window: The name of the window to start with.
         """
-        with self.term.cbreak(), self.term.hidden_cursor():
+        with self.term.fullscreen(), self.term.cbreak(), self.term.hidden_cursor():
             self.__check_window_exists(start_window)
             self.switch_win(start_window)
 

@@ -85,7 +85,7 @@ def run(argv: list[str] | None = None):
         min_height=MIN_HEIGHT,
     )
 
-    # The game draws over the whole screen, so they are only seen once it is done.
+    # The game takes over the screen, so they are only seen once it is done.
     try:
         tui.start("menu")
     finally:

@@ -30,6 +30,7 @@ class MenuWindow(BaseWindow):
         lines.append("")
 
         lines.append(f"♠ {self.term.red('♥')} {self.term.red('♦')} ♣")
+        lines.append("Blackjack")
         lines.append("")
 
         for i, item in enumerate(self.items):

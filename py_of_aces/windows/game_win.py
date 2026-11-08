@@ -1,4 +1,4 @@
-from .utils import BaseWindow
+from .utils import BaseWindow, key_label
 from dataclasses import dataclass
 import math
 from py_of_aces.game_logic import BlackjackGame, GameResult, GameState, Hand, Modes
@@ -76,12 +76,9 @@ class GameWindow(BaseWindow):
         mode_text = ""
         is_practice_mode = self.game.mode == Modes.PRACTICE
         if is_practice_mode:
-            mode_text = " (PRACTICE)"
+            mode_text = " (Practice)"
 
-        title = self.term.bold(
-            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}",
-        )
-        lines.append(title)
+        lines.append(self.term.bold(f"Py of Aces{mode_text}"))
         lines.append("")
 
         money_info = self.term.green(self.game.get_money_display)
@@ -115,9 +112,6 @@ class GameWindow(BaseWindow):
                 "After this round, the deck will be reshuffled.",
             )
             lines.append(styled_message)
-            lines.append("")
-
-        lines.extend(self.__draw_controls())
 
         return lines
 
@@ -380,27 +374,30 @@ class GameWindow(BaseWindow):
         color = getattr(self.term, result_color_mapping[result])
         return color(result_text_mapping[result])
 
-    def __draw_controls(self) -> list[str]:
-        controls = ""
+    def hints(self) -> list[tuple[str, str]]:
+        keys = self.config.keys
+        hints: list[tuple[str, str]] = []
+
         match self.game.state:
             case GameState.PLAYER_TURN:
-                controls += "[h] Hit  [SPACE] Stand"
+                hints.append(("Hit", "h"))
+                hints.append(("Stand", "space"))
 
                 if self.game.can_double_down:
-                    controls += "  [d] Double Down"
+                    hints.append(("Double", "d"))
 
                 if self.game.can_split:
-                    controls += "  [p] Split"
-
-                controls += "  [q] Quit"
+                    hints.append(("Split", "p"))
 
             case GameState.ROUND_FINISHED:
                 if self.game.available_money + self.game.get_winnings() > 0:
-                    controls += "[ENTER] New Round  "
-                controls += "[r] Restart money  "
-                controls += "[q] Quit"
+                    hints.append(("New round", key_label(keys.enter)))
 
-        return [controls]
+                hints.append(("Restart money", "r"))
+
+        hints.append(("Menu", key_label(keys.quit)))
+
+        return hints
 
     def handle_input(self, key: str) -> None:
         """Handle user input based on the current game state."""

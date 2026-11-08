@@ -2,6 +2,7 @@ from .config import Config, load_config
 from .game_logic.blackjack_game import BlackjackGame
 from .tui_handler import TuiHandler
 from .windows import BettingWindow, GameWindow, MenuWindow, SizeWarningWindow
+from .windows.utils import WINDOW_WIDTH
 import argparse
 from importlib.metadata import version
 from pathlib import Path
@@ -53,7 +54,7 @@ def config_of(args: argparse.Namespace) -> Config:
 def run(argv: list[str] | None = None):
     """Start Py of Aces"""
     MIN_HEIGHT = 30
-    MIN_WIDTH = 60
+    MIN_WIDTH = WINDOW_WIDTH + 2
 
     args = parse_args(argv)
     config = config_of(args)

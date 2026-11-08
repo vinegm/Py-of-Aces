@@ -1,4 +1,4 @@
-from .utils import BaseWindow
+from .utils import BaseWindow, key_label, move_label
 from py_of_aces.game_logic import BlackjackGame, Modes
 from py_of_aces.utils import get_title_ascii
 
@@ -39,6 +39,15 @@ class MenuWindow(BaseWindow):
             lines.append(item)
 
         return lines
+
+    def hints(self) -> list[tuple[str, str]]:
+        keys = self.config.keys
+
+        return [
+            ("Move", move_label(keys.up, keys.down)),
+            ("Select", key_label(keys.enter)),
+            ("Quit", key_label(keys.quit)),
+        ]
 
     def handle_input(self, key: str) -> None:
         key = key.lower()

@@ -34,6 +34,11 @@ A terminal-based Blackjack game written in Python using [blessed](https://pypi.o
 - **Dealer AI**: Dealer hits on soft 17, follows standard casino rules
 - **Ace Handling**: Smart ace value calculation (1 or 11)
 
+### Interface
+
+- A key hints bar at the bottom of the screen
+- Configurable keys and table rules (see `example-config.toml`)
+
 ## Installation
 
 ### Prerequisites

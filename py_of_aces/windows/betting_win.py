@@ -1,4 +1,4 @@
-from .utils import BaseWindow
+from .utils import BaseWindow, key_label, move_label
 from py_of_aces.game_logic import BlackjackGame, GameState, Modes
 
 
@@ -29,12 +29,9 @@ class BettingWindow(BaseWindow):
         mode_text = ""
         is_practice_mode = self.game.mode == Modes.PRACTICE
         if is_practice_mode:
-            mode_text = " (PRACTICE)"
+            mode_text = " (Practice)"
 
-        title = self.term.bold(
-            f"{self.term.reverse}PY OF ACES{mode_text}{self.term.normal}",
-        )
-        lines.append(title)
+        lines.append(self.term.bold(f"Py of Aces{mode_text}"))
         lines.append("")
 
         money_info = self.game.get_money_display
@@ -65,16 +62,21 @@ class BettingWindow(BaseWindow):
         if self.game.will_reshuffle:
             styled_message = self.term.yellow("The deck will be reshuffled.")
             lines.append(styled_message)
-            lines.append("")
-
-        controls = "[q] Quit  [↑↓] Adjust bet  "
-        option_keys = list(self.bet_options)
-        if option_keys:
-            controls += f"[{option_keys[0]}-{option_keys[-1]}] Quick bets  "
-        controls += "[ENTER] Deal"
-        lines.append(controls)
 
         return lines
+
+    def hints(self) -> list[tuple[str, str]]:
+        keys = self.config.keys
+        hints = [("Bet", move_label(keys.up, keys.down))]
+
+        option_keys = list(self.bet_options)
+        if option_keys:
+            hints.append(("Quick bets", f"{option_keys[0]}-{option_keys[-1]}"))
+
+        hints.append(("Deal", key_label(keys.enter)))
+        hints.append(("Menu", key_label(keys.quit)))
+
+        return hints
 
     def __is_game_ongoing(self) -> bool:
         return self.game.state != GameState.BETTING

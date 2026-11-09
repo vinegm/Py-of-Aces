@@ -2,26 +2,17 @@ from .utils import BaseWindow
 
 
 class SizeWarningWindow(BaseWindow):
+    framed = False
+
     def __init__(self, min_width: int, min_height: int, **kwargs):
         super().__init__(**kwargs)
         self.min_width = min_width
         self.min_height = min_height
 
     def draw(self) -> list[str]:
-        lines: list[str] = []
-
-        lines.append(self.term.bold_red_reverse("TERMINAL SIZE WARNING"))
-        lines.append("Your terminal is too small to display Py of Aces properly.")
-        lines.append("")
-        lines.append(
-            f"Current size: {self.term.red(f'{self.term.width}x{self.term.height}')}",
-        )
-        lines.append(f"Required size: {self.min_width}x{self.min_height} (minimum)")
-        lines.append("")
-        lines.append("Please resize your terminal or use a smaller font.")
-        lines.append("Press any key to continue or 'q' to quit...")
-
-        return lines
+        return [
+            f"Terminal too small — need at least {self.min_width}x{self.min_height}",
+        ]
 
     def handle_input(self, key: str) -> None:
         if key == "q":

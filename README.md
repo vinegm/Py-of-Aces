@@ -88,6 +88,33 @@ pyaces
 
 Py of Aces reads `$XDG_CONFIG_HOME/pyaces/config.toml` (`~/.config/pyaces/config.toml` when `XDG_CONFIG_HOME` is unset). The file is optional: anything it leaves out keeps its built-in default (see `py_of_aces/config.py`), a file that can't be read or parsed falls back to the defaults entirely, an invalid setting falls back to its own default, and an unknown one is ignored. Problems are printed as warnings when the game exits. An example config with every setting is provided at `example-config.toml`.
 
+## Controls
+
+Menu:
+
+- `↑`/`↓` or `k`/`j`: Move between items
+- `Enter` / `Space`: Select
+- `Q` / `Esc`: Quit
+
+Betting:
+
+- `↑`/`↓` or `k`/`j`: Change the bet by $5
+- `1`-`4`: Quick bets
+- `Enter` / `Space`: Deal
+- `Q` / `Esc`: Back to the menu
+
+Playing:
+
+- `H`: Hit
+- `Space`: Stand
+- `D`: Double down
+- `P`: Split
+- `Enter`: Next round, once it is over
+- `R`: Restart your money, once the round is over
+- `Q` / `Esc`: Back to the menu, where picking the same mode resumes the round and the other one forfeits it
+
+`Ctrl-C` quits from anywhere.
+
 ## Development
 
 Needs [uv](https://docs.astral.sh/uv/). `make install` sets up the environment, `make run` starts the game, and `make ci` runs what CI runs: `ruff format --check`, `ruff check` and `pyright`. `make fmt` formats the code. `make demo` records `assets/demo.gif` from `vhs/demo.tape` with [VHS](https://github.com/charmbracelet/vhs), on a seeded deal so it plays the same every time.
@@ -114,6 +141,10 @@ Needs [uv](https://docs.astral.sh/uv/). `make install` sets up the environment, 
 - **Double Down**: Double your bet, receive exactly one more card
 - **Split**: Split matching cards into two separate hands (requires additional bet)
 
+## Contributing
+
+Contributions are welcome! Open issues or pull requests for bugs, improvements, or new themes. If you prefer, feel free to fork the project and customize it for your needs.
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License, see the [LICENSE](LICENSE) file for details.

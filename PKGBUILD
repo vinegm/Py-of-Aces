@@ -1,15 +1,15 @@
-# Maintainer: vinegm <info AT vinegm D0T com>
+# Maintainer: vinegm <info AT vinegm D0T dev>
 pkgname='py-of-aces'
-pkgver=1.0.1
-pkgrel=2
+pkgver=1.1.0
+pkgrel=1
 pkgdesc="A blackjack TUI written in Python"
 arch=('any')
 url="https://github.com/vinegm/Py-of-Aces"
 license=('MIT')
 depends=('python' 'python-blessed')
-makedepends=('python-build' 'python-installer' 'git')
+makedepends=('python-build' 'python-installer' 'python-poetry-core')
 source=("https://github.com/vinegm/Py-of-Aces/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('35eba37b2971fcb2fb39a8472bcdc464f6dd9e14b0c117b09930cfe032c5988d')
+sha256sums=('e0b8f395f40f9fb114b4717cc846bcbff47eadc085a88c131a674b512ad9a3d5')
 
 build() {
     cd "$srcdir/Py-of-Aces-${pkgver}"
